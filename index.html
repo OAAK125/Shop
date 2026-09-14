@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sohan Kitchen — Homemade, Fresh, Delicious</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* primary — Sohan red, with shades/tints for contrast */
+    --maroon:#951A13;
+    --maroon-deep:#3E0A06;
+    --maroon-dark:#5C0F0A;
+    --maroon-mid:#B23A2E;
+    --maroon-tint:#F3D9D5;
+
+    /* secondary — Sohan ember, with shades/tints for contrast */
+    --ember:#E77213;
+    --ember-dark:#B85810;
+    --ember-light:#F2954F;
+    --dawn:#F3B679;
+    --dawn-soft:#FBE3C4;
+
+    --cream:#FBF5EE;
+    --cream-alt:#F3E7D8;
+    --ink:#2A1D16;
+    --ink-soft:#71604F;
+    --line:#E9DCCB;
+    --white:#FFFFFF;
+    --success:#3F7D5C;
+    --error:#B33A3A;
+    --shadow: 0 16px 40px -18px rgba(42,29,22,.45);
+    --shadow-sm: 0 6px 16px -8px rgba(42,29,22,.35);
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:26px;
+    --font-display:'Fraunces', serif;
+    --font-body:'Work Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--cream);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%;}
+  button{font-family:inherit;}
+  a{color:inherit;}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  .eyebrow{
+    font-family:var(--font-body);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-size:.72rem;
+    font-weight:600;
+    color:var(--ember-dark);
+  }
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px;}
+  :focus-visible{outline:3px solid var(--ember);outline-offset:2px;}
+
+  /* ---------- HEADER ---------- */
+  .site-header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(251,245,234,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;max-width:1140px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{width:42px;height:42px;flex-shrink:0;}
+  .brand-text h1{font-size:1.3rem;letter-spacing:.01em;color:var(--maroon-dark);line-height:1;}
+  .brand-text p{margin:2px 0 0;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);}
+  .header-clock{
+    font-family:var(--font-display);
+    font-size:.95rem;
+    color:var(--maroon);
+    text-align:right;
+    line-height:1.2;
+  }
+  .header-clock span{display:block;font-family:var(--font-body);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* ---------- HERO / FLAP BOARD ---------- */
+  .hero{
+    position:relative;
+    padding:56px 24px 64px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 12% 20%, rgba(231,114,19,.15), transparent 45%),
+      radial-gradient(circle at 88% 0%, rgba(149,26,19,.12), transparent 40%);
+  }
+  .hero-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;}
+  .hero h2{
+    font-size:clamp(2.1rem,4.4vw,3.4rem);
+    line-height:1.05;
+    color:var(--maroon-dark);
+    font-weight:600;
+  }
+  .hero h2 em{font-style:italic;color:var(--ember-dark);}
+  .hero p.lede{margin:18px 0 26px;font-size:1.02rem;color:var(--ink-soft);max-width:46ch;}
+  .social-proof{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .social-proof-card{
+    display:flex;align-items:center;gap:10px;padding:0;border-radius:0;
+    background:transparent;box-shadow:none;border:none;
+  }
+  .social-proof-customers{min-width:145px;}
+  .customer-icon{
+    width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:1.15rem;background:linear-gradient(135deg,var(--maroon-tint),var(--dawn-soft));
+    box-shadow:inset 0 0 0 1px rgba(149,26,19,.08);
+  }
+  .social-proof-metric{display:flex;flex-direction:column;line-height:1.1;}
+  .social-proof-metric strong{
+    font-family:var(--font-display);font-size:1.6rem;color:var(--ink);font-weight:600;
+  }
+  .social-proof-metric span{font-size:.72rem;color:var(--ink-soft);}
+  .social-proof-rating{
+    min-width:145px;background:transparent;border:none;
+  }
+  .rating-stars{
+    position:relative;display:inline-flex;align-items:center;gap:2px;
+    letter-spacing:.04em;color:#D9D0C4;font-size:.9rem;line-height:1;
+  }
+  .rating-stars::before{
+    content:"★★★★★";position:absolute;inset:0;color:#FFB000;
+    width:90%;overflow:hidden;white-space:nowrap;
+  }
+  .rating-stars::after{content:"★★★★★";}
+  .rating-score{display:flex;flex-direction:column;line-height:1.1;}
+  .rating-score strong{
+    font-family:var(--font-display);font-size:1.6rem;color:var(--ink);font-weight:600;
+  }
+  .rating-score span{font-size:.72rem;color:var(--ink-soft);}
+  .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 22px;border-radius:999px;border:none;cursor:pointer;
+    font-weight:600;font-size:.92rem;letter-spacing:.01em;transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--maroon);color:var(--cream);box-shadow:var(--shadow-sm);}
+  .btn-primary:hover{background:var(--maroon-dark);}
+  .btn-ghost{background:transparent;color:var(--maroon-dark);border:1.5px solid var(--maroon-dark);}
+  .btn-ghost:hover{background:var(--maroon-dark);color:var(--cream);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* the split-flap "now serving" board — signature element */
+  .board{
+    background:var(--maroon-dark);
+    border-radius:var(--radius-lg);
+    padding:18px 18px 18px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .board::before{
+    content:"";position:absolute;inset:8px;border:1px solid rgba(251,245,234,.14);border-radius:calc(var(--radius-lg) - 8px);pointer-events:none;
+  }
+  .board-image{
+    position:relative;z-index:1;
+    height:220px;border-radius:14px;overflow:hidden;
+    background-color:var(--cream-alt);
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+    display:block;
+  }
+  .board-image::before{
+    content:"";position:absolute;inset:0;
+    background:inherit;
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    transform:scale(1.05);
+  }
+  .board-label{
+    position:relative;z-index:1;
+    font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dawn-soft);text-align:center;margin:0;
+  }
+  .flap-row{position:relative;z-index:1;display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:0;}
+  .flap-cell{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:clamp(20px,4.6vw,34px);height:clamp(28px,6vw,46px);
+    background:linear-gradient(180deg,var(--maroon-dark),var(--maroon-deep));
+    color:var(--cream);
+    font-family:var(--font-display);font-weight:600;
+    font-size:clamp(.95rem,2.6vw,1.5rem);
+    border-radius:5px;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.06);
+    animation:flapIn .5s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes flapIn{
+    0%{transform:rotateX(85deg);opacity:0;}
+    60%{transform:rotateX(-8deg);opacity:1;}
+    100%{transform:rotateX(0);opacity:1;}
+  }
+  .board-sub{position:relative;z-index:1;text-align:center;margin:0;font-size:.72rem;color:rgba(247,223,180,.75);line-height:1.5;}
+
+  /* ---------- MENU TABS ---------- */
+  .menu-tabs-wrap{
+    position:sticky;top:73px;z-index:30;
+    background:var(--cream);
+    border-bottom:1px solid var(--line);
+  }
+  .menu-tabs{
+    max-width:1140px;margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .tab-btn{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 18px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--white);color:var(--ink-soft);font-weight:600;font-size:.88rem;
+    cursor:pointer;transition:all .15s ease;
+  }
+  .tab-btn .dot, .menu-section-head .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-soft);display:inline-block;flex-shrink:0;}
+  .tab-btn.active{background:var(--maroon);border-color:var(--maroon);color:var(--cream);}
+  .tab-btn:not(.active){background:var(--white);border-color:var(--line);color:var(--ink-soft);}
+  .tab-btn.active .dot{background:var(--dawn-soft);box-shadow:0 0 0 3px rgba(247,223,180,.25);}
+  .tab-btn.is-now .dot, .menu-section-head.is-now .dot{background:var(--success);box-shadow:0 0 0 0 rgba(63,125,92,.38);animation:pulse 2s infinite;}
+  .tab-btn:not(.is-now) .dot, .menu-section-head:not(.is-now) .dot{display:none;}
+  .tab-btn.is-now{position:relative;}
+  .now-pill{
+    margin-left:auto;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);display:flex;align-items:center;gap:6px;
+  }
+  .now-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  /* ---------- MENU GRID ---------- */
+  main{padding:36px 0 70px;}
+  .menu-section{padding:10px 0 34px;}
+  .menu-section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:6px;}
+  .menu-section-head h3{font-size:1.5rem;color:var(--maroon-dark);}
+  .menu-section-head p{margin:0;color:var(--ink-soft);font-size:.88rem;}
+  .menu-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;
+  }
+  .item-card{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:0;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:0;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease;
+    position:relative;overflow:hidden;
+  }
+  .item-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-sm);border-color:transparent;}
+  .item-card.is-muted{opacity:.55;filter:grayscale(.9);}
+  .item-card .badge{
+    position:absolute;top:14px;right:14px;background:var(--ember-dark);color:var(--cream);
+    font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+    padding:4px 9px;border-radius:999px;z-index:2;
+  }
+  .item-visual{
+    position:relative;width:100%;height:150px;background:var(--cream-alt);overflow:hidden;
+  }
+  .item-visual img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    transition:filter .15s ease, transform .15s ease;
+  }
+  .item-card:hover .item-visual img{transform:scale(1.03);}
+  .item-card-content{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;}
+  .item-card h4{font-family:var(--font-display);font-size:1.12rem;color:var(--ink);font-weight:600;}
+  .item-card .desc{font-size:.85rem;color:var(--ink-soft);line-height:1.45;margin:0;flex:1;display:none;}
+  .item-price{font-size:.85rem;color:var(--maroon);font-weight:700;margin:0;}
+  .item-price small{color:var(--ink-soft);font-weight:500;}
+
+  /* ---------- MODAL BASE ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(30,18,13,.55);
+    display:flex;align-items:center;justify-content:center;padding:16px;z-index:100;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal-panel{
+    background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:460px;
+    max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);
+    animation:riseIn .22s ease both;
+  }
+  @keyframes riseIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  @media (max-width:640px){
+    .modal-overlay{align-items:flex-end;padding:0;}
+    .modal-panel{max-width:100%;border-radius:22px 22px 0 0;max-height:88vh;}
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0;}
+  .modal-close{
+    width:34px;height:34px;border-radius:50%;border:none;background:var(--cream-alt);
+    color:var(--ink);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .modal-body{padding:14px 20px 22px;}
+
+  /* item modal */
+  .modal-hero{
+    width:100%;height:150px;border-radius:var(--radius-md);
+    background:linear-gradient(135deg,var(--dawn-soft),var(--ember-light));
+    display:flex;align-items:center;justify-content:center;font-size:3.2rem;margin-bottom:16px;
+  }
+  .modal-panel h3{font-size:1.4rem;color:var(--maroon-dark);}
+  .modal-desc{color:var(--ink-soft);font-size:.92rem;line-height:1.5;margin:8px 0 18px;}
+  .field-label{font-size:.78rem;font-weight:600;letter-spacing:.03em;color:var(--ink);display:block;margin-bottom:6px;}
+  .field-hint{font-size:.74rem;color:var(--ink-soft);margin:6px 0 0;}
+  .price-input-group{
+    display:flex;align-items:center;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+    overflow:hidden;background:var(--cream);
+  }
+  .price-input-group span{padding:0 12px;font-weight:700;color:var(--maroon);background:var(--cream-alt);align-self:stretch;display:flex;align-items:center;}
+  .price-input-group input{
+    flex:1;border:none;background:transparent;padding:12px 10px;font-size:1rem;font-family:var(--font-body);color:var(--ink);
+    -moz-appearance:textfield;
+  }
+  .price-input-group input:focus{outline:none;}
+  .price-input-group.invalid{border-color:var(--error);}
+  .error-text{color:var(--error);font-size:.76rem;margin-top:6px;display:none;}
+  .error-text.show{display:block;}
+  .quick-chips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .chip{
+    border:1px solid var(--line);background:var(--white);border-radius:999px;padding:6px 13px;
+    font-size:.76rem;color:var(--ink-soft);cursor:pointer;font-weight:600;
+  }
+  .chip:hover{border-color:var(--ember);color:var(--ember);}
+  .addons-list{margin-top:18px;display:flex;flex-direction:column;gap:2px;}
+  .addon-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:11px 4px;border-bottom:1px solid var(--line);font-size:.9rem;
+  }
+  .addon-row:last-child{border-bottom:none;}
+  .addon-left{display:flex;align-items:center;gap:10px;}
+  .addon-left input{width:18px;height:18px;accent-color:var(--maroon);}
+  .addon-price{color:var(--ink-soft);font-size:.84rem;}
+  .modal-footer{margin-top:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  .running-total{font-family:var(--font-display);font-size:1.15rem;color:var(--maroon-dark);}
+  .running-total small{display:block;font-family:var(--font-body);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* ---------- CART FAB + PANEL ---------- */
+  .cart-fab{
+    position:fixed;right:20px;bottom:20px;z-index:60;
+    background:var(--maroon);color:var(--cream);border:none;border-radius:999px;
+    padding:15px 22px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:.92rem;
+    box-shadow:var(--shadow);cursor:pointer;
+  }
+  .cart-fab[hidden]{display:none;}
+  .cart-badge{
+    background:var(--ember);color:var(--white);border-radius:999px;min-width:22px;height:22px;
+    display:flex;align-items:center;justify-content:center;font-size:.74rem;padding:0 6px;
+  }
+  .cart-panel{max-width:420px;}
+  .cart-items{display:flex;flex-direction:column;gap:12px;margin:6px 0 16px;}
+  .cart-item{
+    display:flex;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:12px;
+  }
+  .cart-item h5{margin:0 0 3px;font-family:var(--font-display);font-size:1rem;color:var(--ink);}
+  .cart-item .meta{font-size:.78rem;color:var(--ink-soft);line-height:1.4;}
+  .cart-item .remove-btn{background:none;border:none;color:var(--error);font-size:.78rem;cursor:pointer;font-weight:600;padding:0;margin-top:6px;}
+  .cart-item .line-price{font-weight:700;color:var(--maroon);white-space:nowrap;}
+  .cart-empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:.9rem;}
+  .cart-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px dashed var(--line);margin-bottom:16px;}
+  .cart-total-row strong{font-family:var(--font-display);font-size:1.3rem;color:var(--maroon-dark);}
+
+  /* ---------- CHECKOUT FORM ---------- */
+  .form-group{margin-bottom:16px;}
+  .form-group input, .form-group textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px 13px;
+    font-family:var(--font-body);font-size:.95rem;background:var(--cream);color:var(--ink);
+  }
+  .form-group input:focus, .form-group textarea:focus{outline:none;border-color:var(--ember);}
+  .form-group textarea{resize:vertical;min-height:70px;}
+  .form-group.invalid input, .form-group.invalid textarea{border-color:var(--error);}
+  .form-row{display:flex;gap:12px;}
+  .form-row .form-group{flex:1;}
+  .order-note{
+    background:var(--cream-alt);border-radius:var(--radius-sm);padding:12px 14px;font-size:.8rem;color:var(--ink-soft);
+    margin-bottom:16px;line-height:1.5;
+  }
+  .confirm-icon{
+    width:64px;height:64px;border-radius:50%;background:var(--success);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-size:1.7rem;margin:6px auto 16px;
+  }
+  .confirm-summary{background:var(--cream-alt);border-radius:var(--radius-sm);padding:14px 16px;font-size:.85rem;color:var(--ink-soft);line-height:1.6;margin-top:14px;}
+  .confirm-summary strong{color:var(--ink);}
+
+  .notice-panel{
+    max-width:380px;
+    text-align:center;
+    padding:18px 20px 20px;
+  }
+  .notice-icon{
+    width:58px;height:58px;border-radius:50%;background:var(--maroon-tint);color:var(--maroon-dark);
+    display:flex;align-items:center;justify-content:center;font-size:1.7rem;margin:8px auto 16px;
+    box-shadow:inset 0 0 0 1px rgba(149,26,19,.08);
+  }
+  .notice-panel h3{font-size:1.45rem;color:var(--maroon-dark);margin-bottom:8px;}
+  .notice-panel p{margin:0;color:var(--ink-soft);line-height:1.6;font-size:.92rem;}
+  .notice-actions{margin-top:18px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--maroon-dark);color:var(--cream);padding:38px 24px 26px;margin-top:20px;}
+  .footer-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+  footer .brand-text p{color:rgba(251,245,234,.7);}
+  footer .brand-text h1{color:var(--cream);}
+  .footer-note{font-size:.82rem;color:rgba(251,245,234,.65);max-width:340px;line-height:1.6;}
+  .footer-bottom{max-width:1140px;margin:26px auto 0;padding-top:18px;border-top:1px solid rgba(251,245,234,.15);font-size:.74rem;color:rgba(251,245,234,.5);}
+
+  @media (max-width:900px){
+    .hero-inner{grid-template-columns:1fr;}
+  }
+  @media (max-width:560px){
+    .header-clock{display:none;}
+    .form-row{flex-direction:column;gap:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-row">
+    <div class="brand">
+      <img class="brand-mark" src="images/logo.jpeg" alt="Sohan Kitchen logo">
+      <div class="brand-text">
+        <h1>Sohan Kitchen</h1>
+        <p>Homemade · Fresh · Delicious</p>
+      </div>
+    </div>
+    <div class="header-clock">
+      <span>Time in GMT</span>
+      <span id="headerClock" style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--maroon)">--:--</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="social-proof" aria-label="Customer social proof">
+        <div class="social-proof-card social-proof-customers">
+          <div class="customer-icon" aria-hidden="true">😊</div>
+          <div class="social-proof-metric">
+            <strong>51k</strong>
+            <span>Happy customers</span>
+          </div>
+        </div>
+        <div class="social-proof-card social-proof-rating" aria-label="Average rating 4.5 stars">
+          <div class="rating-stars" aria-hidden="true"></div>
+          <div class="rating-score">
+            <strong>4.5</strong>
+            <span>Avg. rating</span>
+          </div>
+        </div>
+      </div>
+      <h2>Delicious homemade food, made <em>fresh</em> to order.</h2>
+      <p class="lede">Pick a dish, set your price, and add the extras you're craving. We will cook it fresh and send it your way. Always cash on delivery
+</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary" onclick="document.getElementById('menuTop').scrollIntoView({behavior:'smooth'})">See today's menu</button>
+        <button class="btn btn-ghost" onclick="openCart()">View order</button>
+      </div>
+    </div>
+    <div class="board" aria-live="polite">
+      <div class="board-image" id="boardImage" aria-label="Featured food"></div>
+      <p class="board-label">Now Serving</p>
+      <div class="flap-row" id="flapRow"></div>
+      <p class="board-sub" id="boardSub"></p>
+    </div>
+  </div>
+</section>
+
+<div class="menu-tabs-wrap" id="menuTop">
+  <div class="menu-tabs" id="menuTabs">
+    <button class="tab-btn" data-period="morning"><span class="dot"></span> Morning menu</button>
+    <button class="tab-btn" data-period="afternoon"><span class="dot"></span> All-day menu</button>
+    <span class="now-pill"><span class="dot"></span> <span id="nowPillText">Now serving morning</span></span>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="menu-section" id="morning-menu" data-period="morning">
+    <div class="menu-section-head">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="dot"></span>
+        <h3>Morning Menu</h3>
+      </div>
+      <p>Served until 13:00&nbsp;</p>
+    </div>
+    <div class="menu-grid" id="morningGrid"></div>
+  </section>
+
+  <section class="menu-section" id="afternoon-menu" data-period="afternoon">
+    <div class="menu-section-head">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="dot"></span>
+        <h3>All-Day Menu</h3>
+      </div>
+      <p>Served for the whole day</p>
+    </div>
+    <div class="menu-grid" id="afternoonGrid"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="brand">
+      <img class="brand-mark" src="images/logo.jpeg" alt="Sohan Kitchen logo">
+      <div class="brand-text">
+        <h1>Sohan Kitchen</h1>
+        <p>Homemade · Fresh · Delicious</p>
+      </div>
+    </div>
+    <p class="footer-note">Prices start from the amounts shown on our menu — tell us your budget and we'll make sure you eat well. Delivery is cash on arrival only, no online payment needed.</p>
+  </div>
+  <div class="footer-bottom wrap">© <span id="year"></span> Sohan Kitchen. All orders confirmed by phone before delivery.</div>
+</footer>
+
+<!-- ITEM MODAL -->
+<div class="modal-overlay" id="itemModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
+    <div class="modal-head">
+      <span class="eyebrow" id="itemModalPeriod">Menu</span>
+      <button class="modal-close" onclick="closeModal('itemModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-hero" id="itemModalEmoji"></div>
+      <h3 id="itemModalTitle"></h3>
+      <p class="modal-desc" id="itemModalDesc"></p>
+
+      <label class="field-label" for="priceInput">Price amount (GH₵)</label>
+      <div class="price-input-group" id="priceInputGroup">
+        <span>GH₵</span>
+        <input type="number" id="priceInput" inputmode="numeric" placeholder="0">
+      </div>
+      <p class="field-hint" id="priceHint"></p>
+      <p class="error-text" id="priceError">Please enter an amount within the allowed range.</p>
+      <div class="quick-chips" id="quickChips"></div>
+
+      <div class="addons-list" id="addonsList"></div>
+
+      <div class="modal-footer">
+        <div class="running-total"><small>Total</small><span id="runningTotal">GH₵0</span></div>
+        <button class="btn btn-primary" id="addToCartBtn" onclick="addToCart()">Add to order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CART -->
+<button class="cart-fab" id="cartFab" onclick="openCart()" hidden>
+  🛍️ <span id="cartFabLabel">View order</span> <span class="cart-badge" id="cartBadge">0</span>
+</button>
+
+<div class="modal-overlay" id="cartModal" hidden>
+  <div class="modal-panel cart-panel" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
+    <div class="modal-head">
+      <h3 id="cartModalTitle" style="font-size:1.2rem;">Your order</h3>
+      <button class="modal-close" onclick="closeModal('cartModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cart-items" id="cartItemsList"></div>
+      <div class="cart-total-row">
+        <span>Total</span>
+        <strong id="cartTotal">GH₵0</strong>
+      </div>
+      <button class="btn btn-primary btn-block" id="checkoutBtn" onclick="openCheckout()">Proceed to checkout</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="closeModal('cartModal'); document.getElementById('menuTop').scrollIntoView({behavior:'smooth'});">Continue Browsing</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="modal-overlay" id="checkoutModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+    <div class="modal-head">
+      <h3 id="checkoutModalTitle" style="font-size:1.2rem;">Delivery details</h3>
+      <button class="modal-close" onclick="closeModal('checkoutModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="order-note">Cash on delivery only — you'll pay the rider when your food arrives. We'll call to confirm your order before we start cooking.</div>
+      <form id="checkoutForm" novalidate>
+        <div class="form-group" id="fg-name">
+          <label class="field-label" for="custName">Full name</label>
+          <input type="text" id="custName" placeholder="e.g. Ama Owusu" autocomplete="name">
+          <p class="error-text">Please enter your name.</p>
+        </div>
+        <div class="form-group" id="fg-phone">
+          <label class="field-label" for="custPhone">Phone number</label>
+          <input type="tel" id="custPhone" placeholder="e.g. 024 123 4567" autocomplete="tel">
+          <p class="error-text">Please enter a valid phone number.</p>
+        </div>
+        <div class="form-group" id="fg-location">
+          <label class="field-label" for="custLocation">Delivery location / Digital address</label>
+          <input type="text" id="custLocation" placeholder="e.g. GA-123-4567, near Tema Comm. 5" autocomplete="street-address">
+          <p class="error-text">Please tell us where to deliver.</p>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="custNotes">Delivery notes (optional)</label>
+          <textarea id="custNotes" placeholder="Gate colour, landmark, call on arrival, etc."></textarea>
+        </div>
+        <div class="cart-total-row" style="margin-top:0;">
+          <span>Total to pay on delivery</span>
+          <strong id="checkoutTotal">GH₵0</strong>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Place order — cash on delivery</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- NOTICE -->
+<div class="modal-overlay" id="noticeModal" hidden>
+  <div class="modal-panel notice-panel" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
+    <div class="modal-head" style="padding:0;">
+      <span></span>
+      <button class="modal-close" onclick="closeModal('noticeModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:0;">
+      <div class="notice-icon">⏰</div>
+      <h3 id="noticeModalTitle">Breakfast unavailable</h3>
+      <p id="noticeModalText">Breakfast is only available from 7:00 to 13:00.</p>
+      <div class="notice-actions">
+        <button class="btn btn-primary btn-block" onclick="closeModal('noticeModal')">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION -->
+<div class="modal-overlay" id="confirmModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-head">
+      <span></span>
+      <button class="modal-close" onclick="closeModal('confirmModal'); resetOrder();" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <div class="confirm-icon">✓</div>
+      <h3 id="confirmModalTitle">Order received!</h3>
+      <p class="modal-desc">Thanks, <span id="confirmName"></span> — we're calling <span id="confirmPhone"></span> shortly to confirm before we start cooking.</p>
+      <div class="confirm-summary" id="confirmSummary" style="text-align:left;"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:20px;" onclick="closeModal('confirmModal'); resetOrder();">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DATA
+========================================================= */
+const ADDONS = {
+  egg:      { name: 'Extra Egg', price: 5 },
+  sausage:  { name: 'Extra Sausage', price: 8 },
+  chicken:  { name: 'Extra Chicken', price: 15 },
+  pepper:   { name: 'Extra Pepper / Shito', price: 3 },
+  cheese:   { name: 'Extra Cheese', price: 6 },
+  plantain: { name: 'Extra Plantain', price: 7 },
+  sauce:    { name: 'Extra Sauce', price: 4 },
+  salad:    { name: 'Extra Salad', price: 6 },
+};
+
+const FOOD_IMAGES = {
+  'bread-egg': 'images/morning/bread_egg.jpg',
+  'porridge': 'images/morning/porridge.jpg',
+  'tea': 'images/morning/tea.jpg',
+  'tuna-sandwich': 'images/morning/tuna_sand.jpg',
+  'fried-rice': 'images/afternoon/fried_rice.jpg',
+  'angwamo': 'images/afternoon/Angwamo.jpg',
+  'kelewele': 'images/afternoon/Kelewele.jpg',
+  'spaghetti': 'images/afternoon/Spaghetti.jpg',
+  'indomie': 'images/afternoon/Indomie.jpg',
+  'fries': 'images/afternoon/Fries.jpg',
+  'beef-burger': 'images/afternoon/Beef_Burger.jpg',
+  'shawarma': 'images/afternoon/Shawarma.jpg',
+  'salad-loaded': 'images/afternoon/Salad Loaded.jpg',
+  'bread-salad': 'images/morning/bread_salad.jpg',
+  'hotdog': 'images/morning/hotdog.jpg',
+  'garlic-hotdogs': 'images/morning/garlic_hotdog.jpg'
+};
+
+const MENU = {
+  morning: [
+    { id:'bread-egg', name:'Bread and Egg', emoji:'🍳', min:10, max:40,
+      desc:'Soft, warm sugar bread served with a perfectly fried egg — a Sohan Kitchen morning classic.',
+      addons:['egg','sausage','cheese'] },
+    { id:'porridge', name:'Porridge', emoji:'🥣', min:5, max:25,
+      desc:'Silky hot porridge, spiced just right, served steaming to start your day off well.',
+      addons:['sugar'.replace('sugar','egg')].slice(0,0).concat(['sauce']).length ? ['sauce'] : [] },
+    { id:'tea', name:'Tea', emoji:'☕', min:10, max:20,
+      desc:'A steaming cup of tea, brewed fresh and served hot — simple comfort in a mug.',
+      addons:[] },
+    { id:'tuna-sandwich', name:'Tuna Sandwich (pack of 4)', emoji:'🥪', min:20, max:60,
+      desc:'Four hearty sandwiches packed with creamy tuna and fresh veggies between soft bread.',
+      addons:['cheese','salad'] },
+    { id:'bread-salad', name:'Bread and Salad', emoji:'🥖', min:10, max:35,
+      desc:'Fresh bread paired with a crisp garden salad — light, colourful, and satisfying.',
+      addons:['egg','salad'] },
+    { id:'hotdog', name:'Hotdog', emoji:'🌭', min:7, max:25,
+      desc:'A classic grilled hotdog tucked into a soft bun, ready in minutes.',
+      addons:['cheese','sauce'] },
+    { id:'garlic-hotdogs', name:'Garlic Hotdogs', emoji:'🧄', min:8, max:28,
+      desc:'Our house hotdog with a garlicky kick and a toasted bun — bold morning flavour.',
+      addons:['cheese','sauce','pepper'] },
+  ],
+  afternoon: [
+    { id:'fried-rice', name:'Fried Rice', emoji:'🍚', min:30, max:100,
+      desc:'Perfectly seasoned fried rice tossed with fresh vegetables — a Sohan Kitchen favourite.',
+      addons:['chicken','egg','pepper'] },
+    { id:'angwamo', name:'Angwamo', emoji:'🥘', min:25, max:90,
+      desc:'Delicious oiled rice served with your choice of protein.',
+      addons:['egg','pepper','chicken'] },
+    { id:'kelewele', name:'Kelewele', emoji:'🌶️', min:10, max:40,
+      desc:'Spiced, fried plantain cubes with ginger and pepper — sweet, hot, and addictive.',
+      addons:['pepper','plantain'] },
+    { id:'spaghetti', name:'Spaghetti', emoji:'🍝', min:20, max:80,
+      desc:'Rich tomato spaghetti cooked the Ghanaian way, full of flavour in every twirl.',
+      addons:['chicken','cheese','sauce'] },
+    { id:'indomie', name:'Indomie', emoji:'🍜', min:25, max:100, featured:true,
+      desc:'Stir-fried noodles loaded with veggies and your choice of protein — our best-seller, the Indomie Special.',
+      addons:['egg','chicken','sausage','pepper'] },
+    { id:'fries', name:'Fries', emoji:'🍟', min:25, max:80,
+      desc:'Golden, crispy fries served hot — the perfect side or a snack on its own.',
+      addons:['cheese','sauce','pepper'] },
+    { id:'beef-burger', name:'Beef Burger', emoji:'🍔', min:30, max:90,
+      desc:'A juicy beef patty stacked in a soft bun with all the fixings.',
+      addons:['cheese','sauce','plantain'] },
+    { id:'shawarma', name:'Shawarma', emoji:'🌯', min:40, max:120,
+      desc:'Grilled meat wrapped tight with fresh veggies and sauce in warm flatbread.',
+      addons:['cheese','sauce','pepper'] },
+    { id:'salad-loaded', name:'Salad Loaded', emoji:'🥗', min:30, max:90,
+      desc:'A generous, colourful salad loaded with fresh vegetables and toppings.',
+      addons:['egg','chicken','cheese'] },
+  ]
+};
+
+/* =========================================================
+   STATE
+========================================================= */
+let activePeriod = 'morning';
+let currentItem = null;
+let cart = [];
+
+/* =========================================================
+   TIME / FLAP BOARD
+========================================================= */
+function getPeriod(){
+  const hour = new Date().getHours();
+  return hour >= 7 && hour < 13 ? 'morning' : 'afternoon';
+}
+
+function setFlap(text){
+  const row = document.getElementById('flapRow');
+  row.innerHTML = '';
+  text.toUpperCase().split('').forEach((ch, i) => {
+    const cell = document.createElement('span');
+    cell.className = 'flap-cell';
+    cell.textContent = ch === ' ' ? '\u00A0' : ch;
+    cell.style.animationDelay = (i * 45) + 'ms';
+    row.appendChild(cell);
+  });
+}
+
+function updateClock(){
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('headerClock').textContent = timeStr;
+}
+
+function refreshBoard(period){
+  setFlap(period === 'morning' ? 'BREAKFAST' : 'AFTERNOON');
+  const imagePath = period === 'morning' ? 'images/mfood.png' : 'images/afood.png';
+  document.getElementById('boardImage').style.backgroundImage = 'url("' + imagePath + '")';
+  document.getElementById('boardSub').textContent =
+    period === 'morning'
+      ? 'Breakfast is served from 7:00 to 13:00.'
+      : 'Afternoon is served all day including breakfast hours.';
+  document.getElementById('nowPillText').textContent =
+    'Now serving ' + (period === 'morning' ? 'morning & all-day menu' : 'all-day menu only');
+  updateMenuIndicators(period);
+}
+
+function updateMenuIndicators(period){
+  const glowingPeriods = period === 'morning' ? ['morning', 'afternoon'] : ['afternoon'];
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const shouldGlow = glowingPeriods.includes(btn.dataset.period);
+    btn.classList.toggle('is-now', shouldGlow);
+    const dot = btn.querySelector('.dot');
+    if (dot) dot.style.display = shouldGlow ? 'inline-block' : 'none';
+  });
+
+  document.querySelectorAll('.menu-section').forEach(section => {
+    const sectionHead = section.querySelector('.menu-section-head');
+    if (!sectionHead) return;
+    const shouldGlowSection = glowingPeriods.includes(section.dataset.period);
+    sectionHead.classList.toggle('is-now', shouldGlowSection);
+    const dot = sectionHead.querySelector('.dot');
+    if (dot) dot.style.display = shouldGlowSection ? 'inline-block' : 'none';
+  });
+}
+
+/* =========================================================
+   TABS + RENDERING
+========================================================= */
+function setActiveTab(period, { scroll = false } = {}){
+  activePeriod = period;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.period === period);
+  });
+  document.getElementById('morning-menu').style.display = period === 'morning' ? 'block' : 'none';
+  document.getElementById('afternoon-menu').style.display = period === 'afternoon' ? 'block' : 'none';
+  updateMenuIndicators(getPeriod());
+  syncMenuItemStates();
+  if (scroll) document.getElementById('menuTop').scrollIntoView({behavior:'smooth'});
+}
+
+function formatGHS(n){
+  return 'GH₵' + Number(n).toLocaleString('en-GH', { maximumFractionDigits: 0 });
+}
+
+function renderMenu(){
+  const morningGrid = document.getElementById('morningGrid');
+  const afternoonGrid = document.getElementById('afternoonGrid');
+  morningGrid.innerHTML = '';
+  afternoonGrid.innerHTML = '';
+
+  MENU.morning.forEach(item => morningGrid.appendChild(buildCard(item, 'morning')));
+  MENU.afternoon.forEach(item => afternoonGrid.appendChild(buildCard(item, 'afternoon')));
+  syncMenuItemStates();
+}
+
+function syncMenuItemStates(){
+  const current = getPeriod();
+  document.querySelectorAll('.item-card').forEach(card => {
+    const isMorningCard = card.closest('#morningGrid') !== null;
+    const shouldMute = current === 'afternoon' && isMorningCard;
+    card.classList.toggle('is-muted', shouldMute);
+  });
+}
+
+function buildCard(item, period){
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'item-card';
+  card.setAttribute('aria-label', 'View ' + item.name);
+  card.onclick = () => openItemModal(item, period);
+
+  const imgSrc = FOOD_IMAGES[item.id] || 'images/afood.png';
+  const isMuted = getPeriod() === 'afternoon' && period === 'morning';
+  if (isMuted) card.classList.add('is-muted');
+
+  card.innerHTML = `
+    ${item.featured ? '<span class="badge">Featured</span>' : ''}
+    <div class="item-visual"><img src="${imgSrc}" alt="${item.name}" /></div>
+    <div class="item-card-content">
+      <h4>${item.name}</h4>
+      <p class="item-price">${formatGHS(item.min)} <small>– ${formatGHS(item.max)}</small></p>
+    </div>
+  `;
+  return card;
+}
+
+/* =========================================================
+   ITEM MODAL
+========================================================= */
+function openItemModal(item, period){
+  currentItem = item;
+  document.getElementById('itemModalPeriod').textContent = period === 'morning' ? 'Morning menu' : 'All-day menu';
+  document.getElementById('itemModalEmoji').textContent = item.emoji;
+  document.getElementById('itemModalTitle').textContent = item.name;
+  document.getElementById('itemModalDesc').textContent = item.desc;
+
+  const priceInput = document.getElementById('priceInput');
+  priceInput.min = item.min;
+  priceInput.max = item.max;
+  priceInput.value = '';
+  document.getElementById('priceHint').textContent =
+    `Minimum ${formatGHS(item.min)} · Maximum ${formatGHS(item.max)}`;
+  document.getElementById('priceError').classList.remove('show');
+  document.getElementById('priceInputGroup').classList.remove('invalid');
+
+  // quick chips
+  const chipsWrap = document.getElementById('quickChips');
+  chipsWrap.innerHTML = '';
+  const mid = Math.round((item.min + item.max) / 2 / 5) * 5;
+  [ ['Min', item.min], ['Popular', mid], ['Max', item.max] ].forEach(([label, val]) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.textContent = `${label} · ${formatGHS(val)}`;
+    chip.onclick = () => { priceInput.value = val; updateRunningTotal(); };
+    chipsWrap.appendChild(chip);
+  });
+
+  // addons
+  const addonsWrap = document.getElementById('addonsList');
+  addonsWrap.innerHTML = '';
+  (item.addons || []).forEach(key => {
+    const addon = ADDONS[key];
+    if (!addon) return;
+    const row = document.createElement('label');
+    row.className = 'addon-row';
+    row.innerHTML = `
+      <span class="addon-left">
+        <input type="checkbox" data-addon="${key}" onchange="updateRunningTotal()">
+        ${addon.name}
+      </span>
+      <span class="addon-price">+${formatGHS(addon.price)}</span>
+    `;
+    addonsWrap.appendChild(row);
+  });
+
+  priceInput.oninput = updateRunningTotal;
+  updateRunningTotal();
+  showModal('itemModal');
+}
+
+function getSelectedAddons(){
+  return Array.from(document.querySelectorAll('#addonsList input[type=checkbox]:checked'))
+    .map(el => el.dataset.addon);
+}
+
+function updateRunningTotal(){
+  const priceInput = document.getElementById('priceInput');
+  const base = Number(priceInput.value) || 0;
+  const addonsTotal = getSelectedAddons().reduce((sum, key) => sum + ADDONS[key].price, 0);
+  document.getElementById('runningTotal').textContent = formatGHS(base + addonsTotal);
+}
+
+function validatePrice(){
+  const priceInput = document.getElementById('priceInput');
+  const val = Number(priceInput.value);
+  const group = document.getElementById('priceInputGroup');
+  const errorEl = document.getElementById('priceError');
+  const valid = priceInput.value !== '' && val >= currentItem.min && val <= currentItem.max;
+  group.classList.toggle('invalid', !valid);
+  errorEl.classList.toggle('show', !valid);
+  if (!valid) {
+    errorEl.textContent = `Please enter an amount between ${formatGHS(currentItem.min)} and ${formatGHS(currentItem.max)}.`;
+  }
+  return valid;
+}
+
+function showNotice(title, message){
+  document.getElementById('noticeModalTitle').textContent = title;
+  document.getElementById('noticeModalText').textContent = message;
+  showModal('noticeModal');
+}
+
+function addToCart(){
+  const isBreakfastItem = MENU.morning.some(item => item.id === currentItem.id);
+  const isBreakfastTime = getPeriod() === 'morning';
+
+  if (isBreakfastItem && !isBreakfastTime) {
+    showNotice('Breakfast unavailable', 'Breakfast is only available from 7:00 to 13:00.');
+    return;
+  }
+
+  if (!validatePrice()) return;
+  const priceInput = document.getElementById('priceInput');
+  const base = Number(priceInput.value);
+  const addonKeys = getSelectedAddons();
+  const addons = addonKeys.map(key => ({ name: ADDONS[key].name, price: ADDONS[key].price }));
+  const addonsTotal = addons.reduce((s,a) => s + a.price, 0);
+
+  cart.push({
+    cartId: Date.now() + Math.random(),
+    itemId: currentItem.id,
+    name: currentItem.name,
+    emoji: currentItem.emoji,
+    base,
+    addons,
+    lineTotal: base + addonsTotal,
+  });
+
+  renderCartFab();
+  closeModal('itemModal');
+  openCart();
+}
+
+/* =========================================================
+   CART
+========================================================= */
+function cartTotal(){
+  return cart.reduce((s, i) => s + i.lineTotal, 0);
+}
+
+function renderCartFab(){
+  const fab = document.getElementById('cartFab');
+  if (cart.length === 0) { fab.hidden = true; return; }
+  fab.hidden = false;
+  document.getElementById('cartBadge').textContent = cart.length;
+  document.getElementById('cartFabLabel').textContent = formatGHS(cartTotal());
+}
+
+function renderCartPanel(){
+  const list = document.getElementById('cartItemsList');
+  list.innerHTML = '';
+  if (cart.length === 0) {
+    list.innerHTML = '<p class="cart-empty">Nothing here yet — browse the menu and add your first dish.</p>';
+  } else {
+    cart.forEach(line => {
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      const addonsText = line.addons.length ? line.addons.map(a => a.name).join(', ') : 'No add-ons';
+      row.innerHTML = `
+        <div>
+          <h5>${line.emoji} ${line.name}</h5>
+          <div class="meta">${addonsText}</div>
+          <button class="remove-btn" onclick="removeFromCart('${line.cartId}')">Remove</button>
+        </div>
+        <div class="line-price">${formatGHS(line.lineTotal)}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('cartTotal').textContent = formatGHS(cartTotal());
+  document.getElementById('checkoutBtn').disabled = cart.length === 0;
+}
+
+function removeFromCart(cartId){
+  cart = cart.filter(i => String(i.cartId) !== String(cartId));
+  renderCartFab();
+  renderCartPanel();
+}
+
+function openCart(){
+  if (cart.length === 0 && document.getElementById('cartFab').hidden) {
+    // nothing yet — still let them see the empty state if they clicked "View order"
+  }
+  renderCartPanel();
+  showModal('cartModal');
+}
+
+/* =========================================================
+   CHECKOUT
+========================================================= */
+function openCheckout(){
+  if (cart.length === 0) return;
+  document.getElementById('checkoutTotal').textContent = formatGHS(cartTotal());
+  closeModal('cartModal');
+  showModal('checkoutModal');
+}
+
+function validateCheckoutForm(){
+  let valid = true;
+
+  const name = document.getElementById('custName').value.trim();
+  const nameGroup = document.getElementById('fg-name');
+  const nameOk = name.length >= 2;
+  nameGroup.classList.toggle('invalid', !nameOk);
+  if (!nameOk) valid = false;
+
+  const phone = document.getElementById('custPhone').value.trim();
+  const phoneGroup = document.getElementById('fg-phone');
+  const phoneOk = /^[0-9+\s-]{9,15}$/.test(phone);
+  phoneGroup.classList.toggle('invalid', !phoneOk);
+  if (!phoneOk) valid = false;
+
+  const location = document.getElementById('custLocation').value.trim();
+  const locGroup = document.getElementById('fg-location');
+  const locOk = location.length >= 4;
+  locGroup.classList.toggle('invalid', !locOk);
+  if (!locOk) valid = false;
+
+  return valid;
+}
+
+document.getElementById('checkoutForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  if (!validateCheckoutForm()) return;
+  placeOrder();
+});
+
+/*
+ * TELEGRAM BOT ORDER ROUTING (future work)
+ * ------------------------------------------------
+ * When ready, replace the body of this function with a fetch() call to your
+ * backend endpoint, which forwards the order to your Telegram bot, e.g:
+ *
+ *   await fetch('/api/send-order', {
+ *     method: 'POST',
+ *     headers: { 'Content-Type': 'application/json' },
+ *     body: JSON.stringify(orderPayload)
+ *   });
+ *
+ * Never call the Telegram Bot API directly from the browser — the bot token
+ * would be exposed. Route it through a small server function instead.
+ */
+function sendOrderToTelegram(orderPayload){
+  console.log('Order ready to route to Telegram bot:', orderPayload);
+  // Not yet implemented — see comment above.
+}
+
+function placeOrder(){
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const location = document.getElementById('custLocation').value.trim();
+  const notes = document.getElementById('custNotes').value.trim();
+
+  const orderPayload = {
+    customer: { name, phone, location, notes },
+    items: cart,
+    total: cartTotal(),
+    placedAt: new Date().toISOString(),
+  };
+  sendOrderToTelegram(orderPayload);
+
+  document.getElementById('confirmName').textContent = name;
+  document.getElementById('confirmPhone').textContent = phone;
+  const itemsSummary = cart.map(l => `${l.name} (${formatGHS(l.lineTotal)})`).join('<br>');
+  document.getElementById('confirmSummary').innerHTML = `
+    <strong>Order summary</strong><br>${itemsSummary}
+    <br><br><strong>Deliver to:</strong> ${location}
+    ${notes ? '<br><strong>Notes:</strong> ' + notes : ''}
+    <br><br><strong>Total due on delivery:</strong> ${formatGHS(cartTotal())}
+  `;
+
+  closeModal('checkoutModal');
+  showModal('confirmModal');
+}
+
+function resetOrder(){
+  cart = [];
+  document.getElementById('checkoutForm').reset();
+  document.querySelectorAll('.form-group.invalid').forEach(el => el.classList.remove('invalid'));
+  renderCartFab();
+}
+
+/* =========================================================
+   MODAL HELPERS
+========================================================= */
+function showModal(id){
+  document.getElementById(id).hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id){
+  document.getElementById(id).hidden = true;
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay:not([hidden])').forEach(m => closeModal(m.id));
+  }
+});
+
+/* =========================================================
+   INIT
+========================================================= */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => setActiveTab(btn.dataset.period));
+});
+
+function init(){
+  document.getElementById('year').textContent = new Date().getFullYear();
+  renderMenu();
+  const period = getPeriod();
+  setActiveTab(period);
+  refreshBoard(period);
+  updateClock();
+  setInterval(updateClock, 1000);
+  // Re-check the auto period once a minute in case 1:00pm passes during the visit
+  setInterval(() => {
+    const p = getPeriod();
+    if (p !== activePeriod) {
+      // menu period has changed since page load — nudge the board, keep user's tab choice
+      refreshBoard(p);
+    }
+  }, 60000);
+}
+init();
+</script>
+</body>
+</html>
