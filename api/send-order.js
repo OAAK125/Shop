@@ -1,19 +1,10 @@
 // Vercel serverless function: POST /api/send-order
 // Env vars (set in Vercel dashboard): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
-const crypto = require('crypto');
+// Also needs the database (Supabase) - see lib/store.js for its env vars.
+const { makeId, saveRecord } = require('../lib/store');
+const { esc, keyboard, renderMessage } = require('../lib/telegram');
 
-// Short, easy-to-read order ID like SK-7KQ4MX (no 0/O/1/I to avoid mix-ups)
-function makeOrderId() {
-  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  const bytes = crypto.randomBytes(6);
-  let id = '';
-  for (let i = 0; i < 6; i++) id += alphabet[bytes[i] % alphabet.length];
-  return 'SK-' + id;
-}
-
-const esc = (v) =>
-  String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
 
 module.exports = async function handler(req, res) {
@@ -54,7 +45,7 @@ module.exports = async function handler(req, res) {
   });
   const total = lines.reduce((s, l) => s + l.lineTotal, 0);
   const ghs = (n) => 'GHS ' + Number(n).toFixed(2);
-  const orderId = makeOrderId();
+  const orderId = makeId('SK'); // short ID like SK-7KQ4MX
 
   const text = [
     '🍽 <b>New Sohan Kitchen order</b>',
@@ -75,14 +66,40 @@ module.exports = async function handler(req, res) {
     .filter((x) => x !== null)
     .join('\n');
 
+  // 1) Save the order (kept 90 days, then deleted automatically)
+  const rec = {
+    id: orderId,
+    createdAt: Date.now(),
+    status: 'new',
+    customer: { name, phone, location, notes },
+    items: lines.map((l) => ({ name: l.name, addons: l.addons.map((a) => clip(a.name, 60)), lineTotal: l.lineTotal })),
+    total,
+    text,
+    history: [],
+  };
+  let saved = true;
   try {
-    const tg = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    await saveRecord('order', rec);
+  } catch (err) {
+    // Don't lose the order just because the database hiccuped - still tell the kitchen.
+    saved = false;
+    console.error('Could not save order:', err);
+  }
+
+  // 2) Send it to Telegram, with the status buttons if it was saved
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: saved ? renderMessage('order', rec) : `${text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
+        parse_mode: 'HTML',
+        ...(saved ? { reply_markup: keyboard('order', rec) } : {}),
+      }),
     });
-    if (!tg.ok) {
-      console.error('Telegram error:', tg.status, await tg.text());
+    if (!r.ok) {
+      console.error('Telegram error:', r.status, JSON.stringify(r.data));
       return res.status(502).json({ error: 'Could not reach the kitchen. Please try again.' });
     }
     return res.status(200).json({ ok: true, orderId });

@@ -2,8 +2,10 @@
 // Uses the same env vars as send-order: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 // Sends the complaint as its own Telegram message, with any photos attached right below it.
 
-const esc = (v) =>
-  String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+// Also needs the database (Supabase) - see lib/store.js for its env vars.
+const { makeId, saveRecord } = require('../lib/store');
+const { esc, keyboard, renderMessage } = require('../lib/telegram');
+
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
 
 const MAX_IMAGES = 3;
@@ -57,8 +59,11 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'One of the photos could not be used.' });
   }
 
+  const complaintId = makeId('CP'); // short ID like CP-4TH9ZA
+
   const text = [
     '⚠️ <b>New complaint</b>',
+    `<b>Complaint ID:</b> <code>${complaintId}</code>`,
     images.length ? `📎 ${images.length} photo${images.length > 1 ? 's' : ''} attached below` : null,
     '',
     `<b>Name:</b> ${esc(name)}`,
@@ -73,13 +78,38 @@ module.exports = async function handler(req, res) {
 
   const api = (method) => `https://api.telegram.org/bot${token}/${method}`;
 
-  // 1) The complaint text, as its own message
+  // 1a) Save the complaint (kept 90 days, then deleted automatically)
+  const rec = {
+    id: complaintId,
+    createdAt: Date.now(),
+    status: 'open',
+    customer: { name, phone },
+    orderId: orderId || null,
+    message,
+    imageCount: images.length,
+    text,
+    history: [],
+  };
+  let saved = true;
+  try {
+    await saveRecord('complaint', rec);
+  } catch (err) {
+    saved = false; // still deliver it to the kitchen
+    console.error('Could not save complaint:', err);
+  }
+
+  // 1b) The complaint text, as its own message (with status buttons if saved)
   let messageId;
   try {
     const r = await fetch(api('sendMessage'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: saved ? renderMessage('complaint', rec) : `${text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
+        parse_mode: 'HTML',
+        ...(saved ? { reply_markup: keyboard('complaint', rec) } : {}),
+      }),
     });
     if (!r.ok) {
       console.error('Telegram sendMessage error:', r.status, await r.text());
