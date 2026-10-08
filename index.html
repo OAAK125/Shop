@@ -78,15 +78,6 @@
   .brand-mark{width:42px;height:42px;flex-shrink:0;}
   .brand-text h1{font-size:1.3rem;letter-spacing:.01em;color:var(--maroon-dark);line-height:1;}
   .brand-text p{margin:2px 0 0;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);}
-  .header-clock{
-    font-family:var(--font-display);
-    font-size:.95rem;
-    color:var(--maroon);
-    text-align:right;
-    line-height:1.2;
-  }
-  .header-clock span{display:block;font-family:var(--font-body);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
-
   /* ---------- HERO / FLAP BOARD ---------- */
   .hero{
     position:relative;
@@ -458,7 +449,6 @@
     .hero-inner{grid-template-columns:1fr;}
   }
   @media (max-width:560px){
-    .header-clock{display:none;}
     .form-row{flex-direction:column;gap:0;}
   }
   @media (prefers-reduced-motion:reduce){
@@ -478,10 +468,6 @@
       </div>
     </div>
     <div class="header-right">
-      <div class="header-clock">
-        <span>Time in GMT</span>
-        <span id="headerClock" style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--maroon)">--:--</span>
-      </div>
       <button class="header-track-btn" type="button" onclick="openTrack()">Track my order</button>
     </div>
   </div>
@@ -947,12 +933,6 @@ function setFlap(text){
     cell.style.animationDelay = (i * 45) + 'ms';
     row.appendChild(cell);
   });
-}
-
-function updateClock(){
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-  document.getElementById('headerClock').textContent = timeStr;
 }
 
 function refreshBoard(period){
@@ -1764,8 +1744,6 @@ function init(){
   const period = getPeriod();
   setActiveTab(period);
   refreshBoard(period);
-  updateClock();
-  setInterval(updateClock, 1000);
   // Re-check the auto period once a minute in case 1:00pm passes during the visit
   setInterval(() => {
     const p = getPeriod();
