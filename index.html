@@ -277,7 +277,7 @@
   .modal-overlay[hidden]{display:none;}
   .modal-panel{
     background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:460px;
-    max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);
+    max-height:92vh;overflow-y:auto;overflow-x:hidden;box-shadow:var(--shadow);
     animation:riseIn .22s ease both;
   }
   @keyframes riseIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
@@ -1242,7 +1242,10 @@ function resetOrder(){
   cart = [];
   document.getElementById('checkoutForm').reset();
   document.querySelectorAll('.form-group.invalid').forEach(el => el.classList.remove('invalid'));
+  document.getElementById('confirmOrderId').textContent = '—';
+  document.getElementById('confirmSummary').innerHTML = '';
   renderCartFab();
+  renderCartPanel();
 }
 
 /* =========================================================
@@ -1445,6 +1448,18 @@ function showModal(id){
 function closeModal(id){
   document.getElementById(id).hidden = true;
   document.body.style.overflow = '';
+
+  if (id === 'complaintModal') {
+    const form = document.getElementById('complaintForm');
+    form.reset();
+    complaintImages = [];
+    renderComplaintPreviews();
+    document.querySelectorAll('#complaintForm .form-group.invalid').forEach(el => el.classList.remove('invalid'));
+    setComplaintError('complaintImageError', '');
+    setComplaintError('complaintSubmitError', '');
+    document.getElementById('complaintFormWrap').hidden = false;
+    document.getElementById('complaintSuccess').hidden = true;
+  }
 }
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', e => {
