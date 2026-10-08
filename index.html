@@ -1072,27 +1072,26 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e){
   placeOrder();
 });
 
-/*
- * TELEGRAM BOT ORDER ROUTING (future work)
- * ------------------------------------------------
- * When ready, replace the body of this function with a fetch() call to your
- * backend endpoint, which forwards the order to your Telegram bot, e.g:
- *
- *   await fetch('/api/send-order', {
- *     method: 'POST',
- *     headers: { 'Content-Type': 'application/json' },
- *     body: JSON.stringify(orderPayload)
- *   });
- *
- * Never call the Telegram Bot API directly from the browser — the bot token
- * would be exposed. Route it through a small server function instead.
- */
-function sendOrderToTelegram(orderPayload){
-  console.log('Order ready to route to Telegram bot:', orderPayload);
-  // Not yet implemented — see comment above.
+const ORDER_ENDPOINT = '/api/send-order';
+
+async function sendOrderToTelegram(orderPayload){
+  const res = await fetch(ORDER_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderPayload)
+  });
+  if (!res.ok) {
+    let msg = 'Could not send your order.';
+    try { msg = (await res.json()).error || msg; } catch (_) {}
+    throw new Error(msg);
+  }
 }
 
-function placeOrder(){
+function escapeHTML(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+}
+
+async function placeOrder(){
   const name = document.getElementById('custName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
   const location = document.getElementById('custLocation').value.trim();
@@ -1104,15 +1103,32 @@ function placeOrder(){
     total: cartTotal(),
     placedAt: new Date().toISOString(),
   };
-  sendOrderToTelegram(orderPayload);
+
+  const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+  const originalLabel = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending your order…';
+
+  try {
+    await sendOrderToTelegram(orderPayload);
+  } catch (err) {
+    console.error('Order failed:', err);
+    alert('Sorry, we could not send your order. Please check your connection and try again.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+    return;
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = originalLabel;
 
   document.getElementById('confirmName').textContent = name;
   document.getElementById('confirmPhone').textContent = phone;
-  const itemsSummary = cart.map(l => `${l.name} (${formatGHS(l.lineTotal)})`).join('<br>');
+  const itemsSummary = cart.map(l => `${escapeHTML(l.name)} (${formatGHS(l.lineTotal)})`).join('<br>');
   document.getElementById('confirmSummary').innerHTML = `
     <strong>Order summary</strong><br>${itemsSummary}
-    <br><br><strong>Deliver to:</strong> ${location}
-    ${notes ? '<br><strong>Notes:</strong> ' + notes : ''}
+    <br><br><strong>Deliver to:</strong> ${escapeHTML(location)}
+    ${notes ? '<br><strong>Notes:</strong> ' + escapeHTML(notes) : ''}
     <br><br><strong>Total due on delivery:</strong> ${formatGHS(cartTotal())}
   `;
 
