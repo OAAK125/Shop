@@ -412,6 +412,26 @@
   .review-detail{padding:3px 0;color:var(--ink);}
   .review-detail b{color:var(--ink-soft);font-weight:600;}
 
+  /* ---------- TRACK ORDER ---------- */
+  .header-right{display:flex;align-items:center;gap:14px;}
+  .header-track-btn{border:1.5px solid var(--maroon);background:transparent;color:var(--maroon);border-radius:999px;padding:8px 14px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:all .15s ease;}
+  .header-track-btn:hover{background:var(--maroon);color:var(--cream);}
+  .footer-buttons{display:flex;flex-wrap:wrap;gap:10px;}
+  .track-status{text-align:center;margin-bottom:6px;}
+  .track-status .track-label{font-family:var(--font-display);font-size:1.6rem;color:var(--maroon-dark);margin:6px 0 4px;}
+  .track-status .track-msg{color:var(--ink-soft);font-size:.92rem;line-height:1.5;margin:0 0 4px;}
+  .track-steps{display:flex;margin:18px 0 8px;}
+  .track-step{flex:1;text-align:center;position:relative;font-size:.7rem;color:var(--ink-soft);line-height:1.25;}
+  .track-step::before{content:"";position:absolute;top:11px;left:-50%;width:100%;height:3px;background:var(--line);z-index:0;}
+  .track-step:first-child::before{display:none;}
+  .track-step.done::before,.track-step.active::before{background:var(--maroon);}
+  .track-dot{position:relative;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--white);font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+  .track-step.done .track-dot{background:var(--maroon);}
+  .track-step.active .track-dot{background:var(--ember);box-shadow:0 0 0 5px var(--dawn-soft);}
+  .track-step.active,.track-step.done{color:var(--ink);font-weight:600;}
+  .track-cancelled{background:#F7DADA;color:var(--error);border-radius:var(--radius-sm);padding:12px 14px;font-weight:600;text-align:center;margin:14px 0 6px;}
+  .track-updated{font-size:.78rem;color:var(--ink-soft);text-align:center;margin:14px 0 18px;}
+
   .notice-panel{
     max-width:380px;
     text-align:center;
@@ -457,9 +477,12 @@
         <p>Homemade · Fresh · Delicious</p>
       </div>
     </div>
-    <div class="header-clock">
-      <span>Time in GMT</span>
-      <span id="headerClock" style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--maroon)">--:--</span>
+    <div class="header-right">
+      <div class="header-clock">
+        <span>Time in GMT</span>
+        <span id="headerClock" style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--maroon)">--:--</span>
+      </div>
+      <button class="header-track-btn" type="button" onclick="openTrack()">Track my order</button>
     </div>
   </div>
 </header>
@@ -543,7 +566,10 @@
     </div>
     <div class="footer-side">
       <p class="footer-note">Prices start from the amounts shown on our menu — tell us your budget and we'll make sure you eat well. Delivery is cash on arrival only, no online payment needed.</p>
-      <button class="footer-complaint-btn" type="button" onclick="openComplaint()">Report a problem</button>
+      <div class="footer-buttons">
+        <button class="footer-complaint-btn" type="button" onclick="openTrack()">Track my order</button>
+        <button class="footer-complaint-btn" type="button" onclick="openComplaint()">Report a problem</button>
+      </div>
     </div>
   </div>
   <div class="footer-bottom wrap">© <span id="year"></span> Sohan Kitchen. All orders confirmed by phone before delivery.</div>
@@ -716,6 +742,47 @@
   </div>
 </div>
 
+<!-- TRACK ORDER -->
+<div class="modal-overlay" id="trackModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="trackModalTitle">
+    <div class="modal-head">
+      <h3 id="trackModalTitle" style="font-size:1.2rem;">Track my order</h3>
+      <button class="modal-close" onclick="closeModal('trackModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="trackFormWrap">
+        <p class="modal-desc" style="margin-top:0;">Enter your order ID and the phone number you ordered with.</p>
+        <form id="trackForm" novalidate>
+          <div class="form-group" id="fg-track-order">
+            <label class="field-label" for="trackOrderId">Order ID</label>
+            <input type="text" id="trackOrderId" placeholder="e.g. SK-7KQ4MX" autocomplete="off" autocapitalize="characters">
+            <p class="error-text">Please enter a valid order ID.</p>
+          </div>
+          <div class="form-group" id="fg-track-phone">
+            <label class="field-label" for="trackPhone">Phone number</label>
+            <input type="tel" id="trackPhone" placeholder="e.g. 024 123 4567" autocomplete="tel">
+            <p class="error-text">Please enter a valid phone number.</p>
+          </div>
+          <p class="error-text show" id="trackSubmitError" style="display:none;"></p>
+          <button type="submit" class="btn btn-primary btn-block" id="trackSubmitBtn">Check status</button>
+        </form>
+      </div>
+
+      <div id="trackResult" hidden>
+        <div class="track-status">
+          <div class="order-id-label" id="trackResultId"></div>
+          <div class="track-label" id="trackLabel"></div>
+          <p class="track-msg" id="trackMsg"></p>
+        </div>
+        <div id="trackProgress"></div>
+        <p class="track-updated" id="trackUpdated"></p>
+        <button type="button" class="btn btn-primary btn-block" id="trackRefreshBtn" onclick="checkTrack()">Check again</button>
+        <button type="button" class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="showTrackForm()">Track a different order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- REVIEW ORDER (are you sure?) -->
 <div class="modal-overlay" id="reviewModal" hidden>
   <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
@@ -760,7 +827,8 @@
         <button class="copy-btn" id="copyOrderIdBtn" type="button" onclick="copyOrderId()">Copy</button>
       </div>
       <div class="confirm-summary" id="confirmSummary" style="text-align:left;"></div>
-      <button class="btn btn-primary btn-block" style="margin-top:20px;" onclick="closeModal('confirmModal'); resetOrder();">Done</button>
+      <button class="btn btn-primary btn-block" style="margin-top:20px;" onclick="trackFromConfirm()">Track this order</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="closeModal('confirmModal'); resetOrder();">Done</button>
     </div>
   </div>
 </div>
@@ -1510,6 +1578,144 @@ document.getElementById('complaintForm').addEventListener('submit', async (e) =>
 });
 
 /* =========================================================
+   TRACK ORDER
+========================================================= */
+const TRACK_ENDPOINT = '/api/order-status';
+const TRACK_STEPS = ['Received', 'Confirmed', 'On the way', 'Delivered'];
+const TRACK_POLL_MS = 30000;
+let trackTimer = null;
+let trackQuery = null;   // { orderId, phone } of the order currently shown
+
+function openTrack(prefill){
+  prefill = prefill || {};
+  stopTrackPolling();
+  trackQuery = null;
+  document.getElementById('trackForm').reset();
+  document.querySelectorAll('#trackForm .form-group.invalid').forEach(el => el.classList.remove('invalid'));
+  setComplaintError('trackSubmitError', '');
+  document.getElementById('trackResult').hidden = true;
+  document.getElementById('trackFormWrap').hidden = false;
+
+  let id = prefill.orderId || '';
+  if (!id) { try { id = localStorage.getItem(LAST_ORDER_KEY) || ''; } catch (_) {} }
+  document.getElementById('trackOrderId').value = id;
+  document.getElementById('trackPhone').value = prefill.phone || '';
+
+  showModal('trackModal');
+  if (prefill.orderId && prefill.phone) checkTrack();   // coming straight from "Order received"
+}
+
+function trackFromConfirm(){
+  const orderId = document.getElementById('confirmOrderId').textContent.trim();
+  const phone = document.getElementById('confirmPhone').textContent.trim();
+  closeModal('confirmModal');
+  resetOrder();
+  openTrack({ orderId, phone });
+}
+
+function showTrackForm(){
+  stopTrackPolling();
+  trackQuery = null;
+  setComplaintError('trackSubmitError', '');
+  document.getElementById('trackResult').hidden = true;
+  document.getElementById('trackFormWrap').hidden = false;
+}
+
+function stopTrackPolling(){
+  if (trackTimer) { clearInterval(trackTimer); trackTimer = null; }
+}
+
+function validateTrackForm(){
+  let valid = true;
+  const id = normalizeOrderId(document.getElementById('trackOrderId').value);
+  const idOk = /^SK-[A-Z0-9]{6}$/.test(id);
+  document.getElementById('fg-track-order').classList.toggle('invalid', !idOk);
+  if (!idOk) valid = false;
+  const phone = document.getElementById('trackPhone').value.trim();
+  const phoneOk = /^[0-9+\s-]{9,15}$/.test(phone);
+  document.getElementById('fg-track-phone').classList.toggle('invalid', !phoneOk);
+  if (!phoneOk) valid = false;
+  return valid;
+}
+
+document.getElementById('trackForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  setComplaintError('trackSubmitError', '');
+  if (!validateTrackForm()) return;
+  trackQuery = {
+    orderId: normalizeOrderId(document.getElementById('trackOrderId').value),
+    phone: document.getElementById('trackPhone').value.trim(),
+  };
+  checkTrack();
+});
+
+async function checkTrack(silent){
+  // "Order received" -> Track passes the order in directly; the form path sets trackQuery above
+  if (!trackQuery) {
+    trackQuery = {
+      orderId: normalizeOrderId(document.getElementById('trackOrderId').value),
+      phone: document.getElementById('trackPhone').value.trim(),
+    };
+  }
+  const btn = document.getElementById('trackSubmitBtn');
+  const refreshBtn = document.getElementById('trackRefreshBtn');
+  if (!silent) {
+    btn.disabled = true; refreshBtn.disabled = true;
+    btn.textContent = 'Checking…'; refreshBtn.textContent = 'Checking…';
+  }
+  try {
+    const res = await fetch(TRACK_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(trackQuery),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Could not check your order. Please try again.');
+    renderTrack(data);
+  } catch (err) {
+    if (silent) return;   // a failed background refresh just keeps showing the last status
+    stopTrackPolling();
+    trackQuery = null;
+    document.getElementById('trackResult').hidden = true;
+    document.getElementById('trackFormWrap').hidden = false;
+    setComplaintError('trackSubmitError', err.message || 'Could not check your order. Please try again.');
+  } finally {
+    btn.disabled = false; refreshBtn.disabled = false;
+    btn.textContent = 'Check status'; refreshBtn.textContent = 'Check again';
+  }
+}
+
+function renderTrack(d){
+  document.getElementById('trackFormWrap').hidden = true;
+  document.getElementById('trackResult').hidden = false;
+  document.getElementById('trackResultId').textContent = 'Order ' + d.orderId;
+  document.getElementById('trackLabel').textContent = d.label;
+  document.getElementById('trackMsg').textContent = d.message;
+
+  const when = new Date(d.updatedAt).toLocaleString('en-GB', {
+    timeZone: 'Africa/Accra', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+  document.getElementById('trackUpdated').textContent = 'Last updated ' + when;
+
+  const progress = document.getElementById('trackProgress');
+  if (d.status === 'cancelled') {
+    progress.innerHTML = '<div class="track-cancelled">This order was cancelled</div>';
+  } else {
+    progress.innerHTML = '<div class="track-steps">' + TRACK_STEPS.map((name, i) => {
+      const cls = i < d.step ? 'done' : (i === d.step ? 'active' : '');
+      const dot = i < d.step || (i === d.step && d.status === 'completed') ? '✓' : (i + 1);
+      return `<div class="track-step ${cls}"><div class="track-dot">${dot}</div>${name}</div>`;
+    }).join('') + '</div>';
+  }
+
+  // Keep it fresh while the customer is looking, until the order is finished
+  stopTrackPolling();
+  if (d.status !== 'completed' && d.status !== 'cancelled') {
+    trackTimer = setInterval(() => { if (!document.hidden) checkTrack(true); }, TRACK_POLL_MS);
+  }
+}
+
+/* =========================================================
    MODAL HELPERS
 ========================================================= */
 function showModal(id){
@@ -1519,6 +1725,8 @@ function showModal(id){
 function closeModal(id){
   document.getElementById(id).hidden = true;
   document.body.style.overflow = '';
+
+  if (id === 'trackModal') stopTrackPolling();
 
   if (id === 'complaintModal') {
     const form = document.getElementById('complaintForm');
