@@ -1,6 +1,17 @@
 // Vercel serverless function: POST /api/send-order
 // Env vars (set in Vercel dashboard): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
+const crypto = require('crypto');
+
+// Short, easy-to-read order ID like SK-7KQ4MX (no 0/O/1/I to avoid mix-ups)
+function makeOrderId() {
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(6);
+  let id = '';
+  for (let i = 0; i < 6; i++) id += alphabet[bytes[i] % alphabet.length];
+  return 'SK-' + id;
+}
+
 const esc = (v) =>
   String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
@@ -36,7 +47,6 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid order.' });
   }
 
-  // Recompute totals on the server instead of trusting the client's number
   const lines = items.map((i) => {
     const addons = Array.isArray(i.addons) ? i.addons : [];
     const lineTotal = Number(i.base || 0) + addons.reduce((s, a) => s + Number(a.price || 0), 0);
@@ -44,9 +54,11 @@ module.exports = async function handler(req, res) {
   });
   const total = lines.reduce((s, l) => s + l.lineTotal, 0);
   const ghs = (n) => 'GHS ' + Number(n).toFixed(2);
+  const orderId = makeOrderId();
 
   const text = [
     '🍽 <b>New Sohan Kitchen order</b>',
+    `<b>Order ID:</b> <code>${orderId}</code>`,
     '',
     ...lines.map((l) => {
       const extras = l.addons.length ? `\n   + ${l.addons.map((a) => esc(clip(a.name, 60))).join(', ')}` : '';
@@ -73,7 +85,7 @@ module.exports = async function handler(req, res) {
       console.error('Telegram error:', tg.status, await tg.text());
       return res.status(502).json({ error: 'Could not reach the kitchen. Please try again.' });
     }
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, orderId });
   } catch (err) {
     console.error(err);
     return res.status(502).json({ error: 'Could not reach the kitchen. Please try again.' });

@@ -369,6 +369,20 @@
   .form-group input:focus, .form-group textarea:focus{outline:none;border-color:var(--ember);}
   .form-group textarea{resize:vertical;min-height:70px;}
   .form-group.invalid input, .form-group.invalid textarea{border-color:var(--error);}
+  .form-group.invalid .error-text{display:block;}
+  .footer-side{display:flex;flex-direction:column;align-items:flex-start;gap:14px;}
+  .footer-complaint-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(251,245,234,.7);background:transparent;color:var(--cream);border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+  .footer-complaint-btn:hover{background:var(--cream);color:var(--maroon-dark);border-color:var(--cream);}
+  .optional-tag{font-weight:400;color:var(--ink-soft);}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  .photo-picker{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .photo-add{display:inline-flex;align-items:center;justify-content:center;min-width:72px;height:72px;border:1px dashed var(--line);background:var(--cream-alt);border-radius:var(--radius-sm);color:var(--maroon-dark);font-weight:700;cursor:pointer;transition:all .15s ease;}
+  .photo-add:hover{background:var(--maroon-tint);}
+  .photo-picker input:focus-visible + .photo-add{outline:3px solid var(--ember);outline-offset:2px;}
+  .photo-thumb{position:relative;width:72px;height:72px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--line);}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+  .photo-thumb button{position:absolute;top:6px;right:6px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(30,18,13,.72);color:var(--white);font-size:.8rem;cursor:pointer;}
+  .form-hint{font-size:.74rem;color:var(--ink-soft);margin:6px 0 0;}
   .form-row{display:flex;gap:12px;}
   .form-row .form-group{flex:1;}
   .order-note{
@@ -381,6 +395,11 @@
   }
   .confirm-summary{background:var(--cream-alt);border-radius:var(--radius-sm);padding:14px 16px;font-size:.85rem;color:var(--ink-soft);line-height:1.6;margin-top:14px;}
   .confirm-summary strong{color:var(--ink);}
+  .order-id-box{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 12px;margin-top:14px;text-align:left;}
+  .order-id-label{display:block;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--maroon-dark);font-weight:600;}
+  .order-id-value{font-family:var(--font-display);font-size:1.35rem;font-weight:600;letter-spacing:.06em;color:var(--maroon-dark);user-select:all;}
+  .copy-btn{margin-top:10px;border:1px solid var(--line);background:var(--white);color:var(--maroon-dark);border-radius:999px;padding:7px 12px;font-size:.74rem;font-weight:700;cursor:pointer;}
+  .copy-btn:hover{background:var(--maroon-dark);color:var(--cream);}
 
   .notice-panel{
     max-width:380px;
@@ -511,7 +530,10 @@
         <p>Homemade · Fresh · Delicious</p>
       </div>
     </div>
-    <p class="footer-note">Prices start from the amounts shown on our menu — tell us your budget and we'll make sure you eat well. Delivery is cash on arrival only, no online payment needed.</p>
+    <div class="footer-side">
+      <p class="footer-note">Prices start from the amounts shown on our menu — tell us your budget and we'll make sure you eat well. Delivery is cash on arrival only, no online payment needed.</p>
+      <button class="footer-complaint-btn" type="button" onclick="openComplaint()">Report a problem</button>
+    </div>
   </div>
   <div class="footer-bottom wrap">© <span id="year"></span> Sohan Kitchen. All orders confirmed by phone before delivery.</div>
 </footer>
@@ -609,6 +631,62 @@
   </div>
 </div>
 
+<!-- COMPLAINT -->
+<div class="modal-overlay" id="complaintModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="complaintModalTitle">
+    <div class="modal-head">
+      <h3 id="complaintModalTitle" style="font-size:1.2rem;">Report a problem</h3>
+      <button class="modal-close" onclick="closeModal('complaintModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="complaintFormWrap">
+        <form id="complaintForm" novalidate>
+          <div class="form-group" id="fg-complaint-name">
+            <label class="field-label" for="cmpName">Full name</label>
+            <input type="text" id="cmpName" placeholder="e.g. Ama Owusu" autocomplete="name">
+            <p class="error-text">Please enter your name.</p>
+          </div>
+          <div class="form-group" id="fg-complaint-phone">
+            <label class="field-label" for="cmpPhone">Phone number</label>
+            <input type="tel" id="cmpPhone" placeholder="e.g. 024 123 4567" autocomplete="tel">
+            <p class="error-text">Please enter a valid phone number.</p>
+          </div>
+          <div class="form-group" id="fg-complaint-order">
+            <label class="field-label" for="cmpOrderId">Order ID <span class="optional-tag">(optional)</span></label>
+            <input type="text" id="cmpOrderId" placeholder="e.g. SK-7KQ4MX" autocomplete="off">
+            <p class="error-text">Please enter a valid order ID.</p>
+          </div>
+          <div class="form-group" id="fg-complaint-message">
+            <label class="field-label" for="cmpMessage">What went wrong?</label>
+            <textarea id="cmpMessage" placeholder="Tell us what happened, where the issue was, and any important detail." maxlength="1000"></textarea>
+            <p class="error-text">Please describe the problem in a bit more detail.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label" for="cmpImages">Add photos <span class="optional-tag">(up to 3)</span></label>
+            <div class="photo-picker" id="photoPicker">
+              <input id="cmpImages" class="sr-only" type="file" accept="image/jpeg,image/png" multiple>
+              <label class="photo-add" id="photoAddLabel" for="cmpImages">＋</label>
+            </div>
+            <p class="field-hint">JPEG/PNG photos are compressed before sending.</p>
+            <p class="error-text show" id="complaintImageError" style="display:none;"></p>
+          </div>
+
+          <p class="error-text show" id="complaintSubmitError" style="display:none;"></p>
+          <button type="submit" class="btn btn-primary btn-block">Send complaint</button>
+        </form>
+      </div>
+
+      <div id="complaintSuccess" hidden>
+        <div class="confirm-icon">✓</div>
+        <h3 style="font-size:1.45rem;color:var(--maroon-dark);">Complaint sent</h3>
+        <p class="modal-desc" style="margin-top:10px;">Thanks for letting us know. We’ll review it and follow up on your order issue as soon as possible.</p>
+        <button class="btn btn-primary btn-block" style="margin-top:18px;" onclick="closeModal('complaintModal')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- NOTICE -->
 <div class="modal-overlay" id="noticeModal" hidden>
   <div class="modal-panel notice-panel" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
@@ -638,6 +716,11 @@
       <div class="confirm-icon">✓</div>
       <h3 id="confirmModalTitle">Order received!</h3>
       <p class="modal-desc">Thanks, <span id="confirmName"></span> — we're calling <span id="confirmPhone"></span> shortly to confirm before we start cooking.</p>
+      <div class="order-id-box" style="text-align:left;">
+        <span class="order-id-label">Order ID</span>
+        <div class="order-id-value" id="confirmOrderId">—</div>
+        <button class="copy-btn" id="copyOrderIdBtn" type="button" onclick="copyOrderId()">Copy</button>
+      </div>
       <div class="confirm-summary" id="confirmSummary" style="text-align:left;"></div>
       <button class="btn btn-primary btn-block" style="margin-top:20px;" onclick="closeModal('confirmModal'); resetOrder();">Done</button>
     </div>
@@ -1080,11 +1163,11 @@ async function sendOrderToTelegram(orderPayload){
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(orderPayload)
   });
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    let msg = 'Could not send your order.';
-    try { msg = (await res.json()).error || msg; } catch (_) {}
-    throw new Error(msg);
+    throw new Error(data.error || 'Could not send your order.');
   }
+  return data;
 }
 
 function escapeHTML(str){
@@ -1109,11 +1192,16 @@ async function placeOrder(){
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending your order…';
 
+  let orderId = '';
   try {
-    await sendOrderToTelegram(orderPayload);
+    const result = await sendOrderToTelegram(orderPayload);
+    orderId = (result && result.orderId) || '';
+    if (orderId) {
+      try { localStorage.setItem('sohan_last_order_id', orderId); } catch (_) {}
+    }
   } catch (err) {
     console.error('Order failed:', err);
-    alert('Sorry, we could not send your order. Please check your connection and try again.');
+    alert(err.message || 'Sorry, we could not send your order. Please check your connection and try again.');
     submitBtn.disabled = false;
     submitBtn.textContent = originalLabel;
     return;
@@ -1122,6 +1210,8 @@ async function placeOrder(){
   submitBtn.disabled = false;
   submitBtn.textContent = originalLabel;
 
+  document.getElementById('confirmOrderId').textContent = orderId;
+  document.getElementById('copyOrderIdBtn').textContent = 'Copy';
   document.getElementById('confirmName').textContent = name;
   document.getElementById('confirmPhone').textContent = phone;
   const itemsSummary = cart.map(l => `${escapeHTML(l.name)} (${formatGHS(l.lineTotal)})`).join('<br>');
@@ -1136,12 +1226,214 @@ async function placeOrder(){
   showModal('confirmModal');
 }
 
+async function copyOrderId(){
+  const id = document.getElementById('confirmOrderId').textContent;
+  const btn = document.getElementById('copyOrderIdBtn');
+  try {
+    await navigator.clipboard.writeText(id);
+  } catch (_) {
+    // fallback: leave the text selected for manual copy if clipboard is unavailable
+  }
+  btn.textContent = 'Copied ✓';
+  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+}
+
 function resetOrder(){
   cart = [];
   document.getElementById('checkoutForm').reset();
   document.querySelectorAll('.form-group.invalid').forEach(el => el.classList.remove('invalid'));
   renderCartFab();
 }
+
+/* =========================================================
+   COMPLAINTS
+========================================================= */
+const COMPLAINT_ENDPOINT = '/api/send-complaint';
+const MAX_COMPLAINT_IMAGES = 3;
+const LAST_ORDER_KEY = 'sohan_last_order_id';
+let complaintImages = [];
+
+function normalizeOrderId(v){
+  let id = String(v || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (/^[A-Z0-9]{6}$/.test(id)) id = 'SK-' + id;
+  return id;
+}
+
+function openComplaint(){
+  document.getElementById('complaintForm').reset();
+  complaintImages = [];
+  renderComplaintPreviews();
+  document.querySelectorAll('#complaintForm .form-group.invalid').forEach(el => el.classList.remove('invalid'));
+  setComplaintError('complaintImageError', '');
+  setComplaintError('complaintSubmitError', '');
+  document.getElementById('complaintFormWrap').hidden = false;
+  document.getElementById('complaintSuccess').hidden = true;
+  try {
+    const last = localStorage.getItem(LAST_ORDER_KEY);
+    if (last) document.getElementById('cmpOrderId').value = last;
+  } catch (_) {}
+  showModal('complaintModal');
+}
+
+function setComplaintError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function loadImageFromFile(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Unable to read image file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressImage(file){
+  const img = await new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Unable to decode image'));
+    };
+    image.src = url;
+  });
+
+  const MAX_BYTES = 900 * 1024;
+  let maxDim = 1280;
+  let quality = 0.78;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const canvas = document.createElement('canvas');
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+    const bytes = Math.round((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3 / 4);
+    if (bytes <= MAX_BYTES) return dataUrl;
+    quality = Math.max(0.4, quality - 0.12);
+    maxDim = Math.max(640, maxDim * 0.82);
+  }
+  throw new Error('too large');
+}
+
+function renderComplaintPreviews(){
+  const picker = document.getElementById('photoPicker');
+  picker.querySelectorAll('.photo-thumb').forEach(el => el.remove());
+  const addLabel = document.getElementById('photoAddLabel');
+  complaintImages.forEach((src, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `<img src="${src}" alt="Complaint preview ${i + 1}"><button type="button" aria-label="Remove photo ${i + 1}" onclick="removeComplaintImage(${i})">×</button>`;
+    picker.insertBefore(thumb, addLabel);
+  });
+  addLabel.hidden = complaintImages.length >= MAX_COMPLAINT_IMAGES;
+}
+
+function removeComplaintImage(index){
+  complaintImages.splice(index, 1);
+  renderComplaintPreviews();
+}
+
+document.getElementById('cmpImages').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!files.length) return;
+  setComplaintError('complaintImageError', '');
+
+  const remaining = MAX_COMPLAINT_IMAGES - complaintImages.length;
+  const nextFiles = files.slice(0, remaining);
+
+  try {
+    for (const file of nextFiles) {
+      const dataUrl = await compressImage(file);
+      complaintImages.push(dataUrl);
+    }
+    if (nextFiles.length < files.length) {
+      setComplaintError('complaintImageError', `You can attach up to ${MAX_COMPLAINT_IMAGES} photos.`);
+    }
+    renderComplaintPreviews();
+  } catch (_) {
+    setComplaintError('complaintImageError', 'One or more photos could not be added. Please try smaller images.');
+  }
+});
+
+function validateComplaintForm(){
+  let valid = true;
+
+  const name = document.getElementById('cmpName').value.trim();
+  const nameGroup = document.getElementById('fg-complaint-name');
+  const nameOk = name.length >= 2;
+  nameGroup.classList.toggle('invalid', !nameOk);
+  if (!nameOk) valid = false;
+
+  const phone = document.getElementById('cmpPhone').value.trim();
+  const phoneGroup = document.getElementById('fg-complaint-phone');
+  const phoneOk = /^[0-9+\s-]{9,15}$/.test(phone);
+  phoneGroup.classList.toggle('invalid', !phoneOk);
+  if (!phoneOk) valid = false;
+
+  const orderId = normalizeOrderId(document.getElementById('cmpOrderId').value);
+  const orderGroup = document.getElementById('fg-complaint-order');
+  const orderValue = document.getElementById('cmpOrderId').value.trim();
+  const orderOk = !orderValue || /^SK-[A-Z0-9]{6}$/.test(orderId) || /^[A-Z0-9]{6}$/.test(orderId.replace(/^SK-/, ''));
+  orderGroup.classList.toggle('invalid', !!orderValue && !orderOk);
+  if (orderValue && !orderOk) valid = false;
+
+  const message = document.getElementById('cmpMessage').value.trim();
+  const messageGroup = document.getElementById('fg-complaint-message');
+  const messageOk = message.length >= 10;
+  messageGroup.classList.toggle('invalid', !messageOk);
+  if (!messageOk) valid = false;
+
+  return valid;
+}
+
+document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  setComplaintError('complaintSubmitError', '');
+  if (!validateComplaintForm()) return;
+
+  const payload = {
+    customer: {
+      name: document.getElementById('cmpName').value.trim(),
+      phone: document.getElementById('cmpPhone').value.trim(),
+    },
+    orderId: normalizeOrderId(document.getElementById('cmpOrderId').value),
+    message: document.getElementById('cmpMessage').value.trim(),
+    images: complaintImages,
+  };
+
+  const submitBtn = document.getElementById('complaintForm').querySelector('button[type="submit"]');
+  const original = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+
+  try {
+    const res = await fetch(COMPLAINT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Could not send complaint.');
+    document.getElementById('complaintFormWrap').hidden = true;
+    document.getElementById('complaintSuccess').hidden = false;
+  } catch (err) {
+    setComplaintError('complaintSubmitError', err.message || 'Could not send complaint. Please try again.');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = original;
+  }
+});
 
 /* =========================================================
    MODAL HELPERS
