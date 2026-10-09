@@ -58,14 +58,18 @@ module.exports = async function handler(req, res) {
 
   const view = CUSTOMER_VIEW[rec.status] || CUSTOMER_VIEW.new;
   const last = (rec.history || []).slice(-1)[0];
+  const updatedAt = last ? last.at : rec.createdAt;
   return res.status(200).json({
     ok: true,
     orderId: rec.id,
     status: rec.status,
     step: view.step,
+    statusStep: view.step,
     label: view.label,
+    statusLabel: view.label,
     message: view.message,
+    statusMessage: view.message,
     placedAt: rec.createdAt,
-    updatedAt: last ? last.at : rec.createdAt,
+    updatedAt,
   });
 };

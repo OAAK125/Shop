@@ -380,6 +380,13 @@
     background:var(--cream-alt);border-radius:var(--radius-sm);padding:12px 14px;font-size:.8rem;color:var(--ink-soft);
     margin-bottom:16px;line-height:1.5;
   }
+  .order-id-callout{background:var(--dawn-soft);border:2px solid var(--ember);border-radius:var(--radius-sm);padding:14px;margin-top:14px;text-align:left;}
+  .order-id-callout-title{font-weight:700;font-size:.95rem;color:var(--maroon-dark);margin-bottom:4px;}
+  .order-id-callout p{font-size:.84rem;line-height:1.5;color:var(--ink);margin:0 0 10px;}
+  .order-id-callout .order-id-box{margin-top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .order-id-callout .order-id-box .order-id-text{min-width:0;}
+  .order-id-callout .copy-btn{margin-top:0;background:var(--maroon);border-color:var(--maroon);color:var(--cream);padding:9px 16px;font-size:.8rem;}
+  .order-id-callout .copy-btn:hover{background:var(--maroon-dark);}
   .confirm-icon{
     width:64px;height:64px;border-radius:50%;background:var(--success);color:var(--white);
     display:flex;align-items:center;justify-content:center;font-size:1.7rem;margin:6px auto 16px;
@@ -807,10 +814,16 @@
       <div class="confirm-icon">✓</div>
       <h3 id="confirmModalTitle">Order received!</h3>
       <p class="modal-desc">Thanks, <span id="confirmName"></span> — we're calling <span id="confirmPhone"></span> shortly to confirm before we start cooking.</p>
-      <div class="order-id-box" style="text-align:left;">
-        <span class="order-id-label">Order ID</span>
-        <div class="order-id-value" id="confirmOrderId">—</div>
-        <button class="copy-btn" id="copyOrderIdBtn" type="button" onclick="copyOrderId()">Copy</button>
+      <div class="order-id-callout" role="note">
+        <div class="order-id-callout-title">📌 Please save your order ID</div>
+        <p>Keep this code handy so you can track your order and share it if you need support.</p>
+        <div class="order-id-box" style="text-align:left;">
+          <div class="order-id-text">
+            <span class="order-id-label">Order ID</span>
+            <div class="order-id-value" id="confirmOrderId">—</div>
+          </div>
+          <button class="copy-btn" id="copyOrderIdBtn" type="button" onclick="copyOrderId()">Copy order ID</button>
+        </div>
       </div>
       <div class="confirm-summary" id="confirmSummary" style="text-align:left;"></div>
       <button class="btn btn-primary btn-block" style="margin-top:20px;" onclick="trackFromConfirm()">Track this order</button>
@@ -1330,7 +1343,7 @@ async function placeOrder(){
   submitBtn.textContent = originalLabel;
 
   document.getElementById('confirmOrderId').textContent = orderId;
-  document.getElementById('copyOrderIdBtn').textContent = 'Copy';
+  document.getElementById('copyOrderIdBtn').textContent = COPY_LABEL;
   document.getElementById('confirmName').textContent = name;
   document.getElementById('confirmPhone').textContent = phone;
   const itemsSummary = cart.map(l => `${escapeHTML(l.name)} (${formatGHS(l.lineTotal)})`).join('<br>');
@@ -1345,16 +1358,37 @@ async function placeOrder(){
   showModal('confirmModal');
 }
 
+const COPY_LABEL = 'Copy order ID';
+
 async function copyOrderId(){
-  const id = document.getElementById('confirmOrderId').textContent;
+  const el = document.getElementById('confirmOrderId');
+  const id = el.textContent.trim();
   const btn = document.getElementById('copyOrderIdBtn');
+  let copied = false;
   try {
     await navigator.clipboard.writeText(id);
+    copied = true;
   } catch (_) {
-    // fallback: leave the text selected for manual copy if clipboard is unavailable
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = id;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      copied = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (_) {}
   }
-  btn.textContent = 'Copied ✓';
-  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  if (!copied) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  btn.textContent = copied ? 'Copied ✓' : 'Select the ID and copy it';
+  setTimeout(() => { btn.textContent = COPY_LABEL; }, 2500);
 }
 
 function resetOrder(){
@@ -1665,32 +1699,52 @@ async function checkTrack(silent){
   }
 }
 
+function getTrackStatusMeta(d){
+  const lookup = {
+    new: { step: 0, label: 'Order received', message: "We've got your order and will call you shortly to confirm it." },
+    confirmed: { step: 1, label: 'Confirmed', message: 'Your order is confirmed and is being prepared.' },
+    out: { step: 2, label: 'On the way', message: 'Your order is out for delivery. Please keep your phone close.' },
+    completed: { step: 3, label: 'Delivered', message: 'Your order has been delivered. Enjoy your meal!' },
+    cancelled: { step: -1, label: 'Cancelled', message: 'This order was cancelled. Please call us if you think this is a mistake.' },
+  };
+  const status = (d && d.status) || 'new';
+  const fallback = lookup[status] || lookup.new;
+  const parsedStep = Number.isInteger(d && d.step) ? Number(d.step) : null;
+  return {
+    status,
+    step: parsedStep !== null ? parsedStep : fallback.step,
+    label: d && (d.label || d.statusLabel) ? (d.label || d.statusLabel) : fallback.label,
+    message: d && (d.message || d.statusMessage) ? (d.message || d.statusMessage) : fallback.message,
+  };
+}
+
 function renderTrack(d){
+  const meta = getTrackStatusMeta(d);
   document.getElementById('trackFormWrap').hidden = true;
   document.getElementById('trackResult').hidden = false;
-  document.getElementById('trackResultId').textContent = 'Order ' + d.orderId;
-  document.getElementById('trackLabel').textContent = d.label;
-  document.getElementById('trackMsg').textContent = d.message;
+  document.getElementById('trackResultId').textContent = 'Order ' + (d.orderId || '—');
+  document.getElementById('trackLabel').textContent = meta.label;
+  document.getElementById('trackMsg').textContent = meta.message;
 
-  const when = new Date(d.updatedAt).toLocaleString('en-GB', {
+  const when = d && d.updatedAt ? new Date(d.updatedAt).toLocaleString('en-GB', {
     timeZone: 'Africa/Accra', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-  });
+  }) : 'just now';
   document.getElementById('trackUpdated').textContent = 'Last updated ' + when;
 
   const progress = document.getElementById('trackProgress');
-  if (d.status === 'cancelled') {
+  if (meta.status === 'cancelled') {
     progress.innerHTML = '<div class="track-cancelled">This order was cancelled</div>';
   } else {
     progress.innerHTML = '<div class="track-steps">' + TRACK_STEPS.map((name, i) => {
-      const cls = i < d.step ? 'done' : (i === d.step ? 'active' : '');
-      const dot = i < d.step || (i === d.step && d.status === 'completed') ? '✓' : (i + 1);
+      const cls = i < meta.step ? 'done' : (i === meta.step ? 'active' : '');
+      const dot = i < meta.step || (i === meta.step && meta.status === 'completed') ? '✓' : (i + 1);
       return `<div class="track-step ${cls}"><div class="track-dot">${dot}</div>${name}</div>`;
     }).join('') + '</div>';
   }
 
   // Keep it fresh while the customer is looking, until the order is finished
   stopTrackPolling();
-  if (d.status !== 'completed' && d.status !== 'cancelled') {
+  if (meta.status !== 'completed' && meta.status !== 'cancelled') {
     trackTimer = setInterval(() => { if (!document.hidden) checkTrack(true); }, TRACK_POLL_MS);
   }
 }

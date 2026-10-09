@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
+const orderStatusHandler = require('./api/order-status');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -23,6 +24,8 @@ function makeOrderId() {
 const esc = (v) =>
   String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
+
+app.post('/api/order-status', (req, res) => orderStatusHandler(req, res));
 
 app.post('/api/send-order', async (req, res) => {
   try {
