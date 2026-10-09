@@ -1,9 +1,9 @@
-// Vercel serverless function: POST /api/send-order
+﻿// Vercel serverless function: POST /api/send-order
 // Env vars (set in Vercel dashboard): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 // Also needs the database (Supabase) - see lib/store.js for its env vars.
 const { makeId, saveRecord } = require('../lib/store');
-const { esc, keyboard, renderMessage } = require('../lib/telegram');
+const { esc, tg, keyboard, renderMessage, whenFull } = require('../lib/telegram');
 
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
 
@@ -45,64 +45,72 @@ module.exports = async function handler(req, res) {
   });
   const total = lines.reduce((s, l) => s + l.lineTotal, 0);
   const ghs = (n) => 'GHS ' + Number(n).toFixed(2);
-  const orderId = makeId('SK'); // short ID like SK-7KQ4MX
 
-  const text = [
-    '🍽 <b>New Sohan Kitchen order</b>',
-    `<b>Order ID:</b> <code>${orderId}</code>`,
-    '',
-    ...lines.map((l) => {
-      const extras = l.addons.length ? `\n   + ${l.addons.map((a) => esc(clip(a.name, 60))).join(', ')}` : '';
-      return `• ${esc(l.name)} — ${ghs(l.lineTotal)}${extras}`;
-    }),
-    '',
-    `<b>Total (cash on delivery):</b> ${ghs(total)}`,
-    '',
-    `<b>Name:</b> ${esc(name)}`,
-    `<b>Phone:</b> ${esc(phone)}`,
-    `<b>Deliver to:</b> ${esc(location)}`,
-    notes ? `<b>Notes:</b> ${esc(notes)}` : null,
-  ]
-    .filter((x) => x !== null)
-    .join('\n');
+  const buildText = (orderId, createdAt) =>
+    [
+      '🍽 <b>New Sohan Kitchen order</b>',
+      `<b>Order ID:</b> <code>${orderId}</code>`,
+      `🕒 <b>Placed:</b> ${whenFull(createdAt)} (GMT)`,
+      '',
+      ...lines.map((l) => {
+        const extras = l.addons.length ? `\n   + ${l.addons.map((a) => esc(clip(a.name, 60))).join(', ')}` : '';
+        return `• ${esc(l.name)} — ${ghs(l.lineTotal)}${extras}`;
+      }),
+      '',
+      `<b>Total (cash on delivery):</b> ${ghs(total)}`,
+      '',
+      `<b>Name:</b> ${esc(name)}`,
+      `<b>Phone:</b> ${esc(phone)}`,
+      `<b>Deliver to:</b> ${esc(location)}`,
+      notes ? `<b>Notes:</b> ${esc(notes)}` : null,
+    ]
+      .filter((x) => x !== null)
+      .join('\n');
 
-  // 1) Save the order (kept 90 days, then deleted automatically)
-  const rec = {
-    id: orderId,
-    createdAt: Date.now(),
-    status: 'new',
-    customer: { name, phone, location, notes },
-    items: lines.map((l) => ({ name: l.name, addons: l.addons.map((a) => clip(a.name, 60)), lineTotal: l.lineTotal })),
-    total,
-    text,
-    history: [],
-  };
-  let saved = true;
-  try {
-    await saveRecord('order', rec);
-  } catch (err) {
-    // Don't lose the order just because the database hiccuped - still tell the kitchen.
-    saved = false;
-    console.error('Could not save order:', err);
+  // 1) Save the order (kept 90 days, then deleted automatically).
+  //    The ID is random and the database refuses duplicates; on the (very rare) clash, pick a new ID.
+  let rec;
+  let saved = false;
+  for (let attempt = 0; attempt < 3 && !saved; attempt++) {
+    const orderId = makeId('SK'); // short ID like SK-7KQ4MX
+    const createdAt = Date.now(); // the moment the order was made
+    rec = {
+      id: orderId,
+      createdAt,
+      status: 'new',
+      customer: { name, phone, location, notes },
+      items: lines.map((l) => ({ name: l.name, addons: l.addons.map((a) => clip(a.name, 60)), lineTotal: l.lineTotal })),
+      total,
+      text: buildText(orderId, createdAt),
+      history: [],
+    };
+    try {
+      await saveRecord('order', rec);
+      saved = true;
+    } catch (err) {
+      if (err.code === 'DUPLICATE') {
+        console.error('Order ID clash, trying a new one:', orderId);
+        continue;
+      }
+      // Don't lose the order just because the database hiccuped - still tell the kitchen.
+      console.error('Could not save order:', err);
+      break;
+    }
   }
 
   // 2) Send it to Telegram, with the status buttons if it was saved
   try {
-    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: saved ? renderMessage('order', rec) : `${text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
-        parse_mode: 'HTML',
-        ...(saved ? { reply_markup: keyboard('order', rec) } : {}),
-      }),
+    const r = await tg('sendMessage', {
+      chat_id: chatId,
+      text: saved ? renderMessage('order', rec) : `${rec.text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
+      parse_mode: 'HTML',
+      ...(saved ? { reply_markup: keyboard('order', rec) } : {}),
     });
     if (!r.ok) {
       console.error('Telegram error:', r.status, JSON.stringify(r.data));
       return res.status(502).json({ error: 'Could not reach the kitchen. Please try again.' });
     }
-    return res.status(200).json({ ok: true, orderId });
+    return res.status(200).json({ ok: true, orderId: rec.id });
   } catch (err) {
     console.error(err);
     return res.status(502).json({ error: 'Could not reach the kitchen. Please try again.' });

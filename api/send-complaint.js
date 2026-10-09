@@ -1,10 +1,10 @@
-// Vercel serverless function: POST /api/send-complaint
+﻿// Vercel serverless function: POST /api/send-complaint
 // Uses the same env vars as send-order: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 // Sends the complaint as its own Telegram message, with any photos attached right below it.
 
 // Also needs the database (Supabase) - see lib/store.js for its env vars.
-const { makeId, saveRecord } = require('../lib/store');
-const { esc, keyboard, renderMessage } = require('../lib/telegram');
+const { makeId, saveRecord, getRecord } = require('../lib/store');
+const { esc, renderFull, whenFull } = require('../lib/telegram');
 
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
 
@@ -59,56 +59,85 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'One of the photos could not be used.' });
   }
 
-  const complaintId = makeId('CP'); // short ID like CP-4TH9ZA
+  // Is the order ID real? (A typo, or an order older than 90 days, won't be found.)
+  let orderChecked = false;
+  let orderLinked = false;
+  if (orderId) {
+    try {
+      orderLinked = !!(await getRecord('order', orderId));
+      orderChecked = true;
+    } catch (err) {
+      console.error('Could not check order ID:', err);
+    }
+  }
+  const orderLine = !orderId
+    ? 'not provided'
+    : `<code>${orderId}</code>${orderChecked && !orderLinked ? ' ⚠️ not found in our records' : ''}`;
 
-  const text = [
-    '⚠️ <b>New complaint</b>',
-    `<b>Complaint ID:</b> <code>${complaintId}</code>`,
-    images.length ? `📎 ${images.length} photo${images.length > 1 ? 's' : ''} attached below` : null,
-    '',
-    `<b>Name:</b> ${esc(name)}`,
-    `<b>Phone:</b> ${esc(phone)}`,
-    `<b>Order ID:</b> ${orderId ? `<code>${orderId}</code>` : 'not provided'}`,
-    '',
-    '<b>Complaint:</b>',
-    esc(message),
-  ]
-    .filter((x) => x !== null)
-    .join('\n');
+  const buildText = (complaintId, createdAt) =>
+    [
+      '⚠️ <b>New complaint</b>',
+      `<b>Complaint ID:</b> <code>${complaintId}</code>`,
+      `🕒 <b>Received:</b> ${whenFull(createdAt)} (GMT)`,
+      images.length ? `📎 ${images.length} photo${images.length > 1 ? 's' : ''} attached below` : null,
+      '',
+      `<b>Name:</b> ${esc(name)}`,
+      `<b>Phone:</b> ${esc(phone)}`,
+      `<b>Order ID:</b> ${orderLine}`,
+      '',
+      '<b>Complaint:</b>',
+      esc(message),
+    ]
+      .filter((x) => x !== null)
+      .join('\n');
 
   const api = (method) => `https://api.telegram.org/bot${token}/${method}`;
 
-  // 1a) Save the complaint (kept 90 days, then deleted automatically)
-  const rec = {
-    id: complaintId,
-    createdAt: Date.now(),
-    status: 'open',
-    customer: { name, phone },
-    orderId: orderId || null,
-    message,
-    imageCount: images.length,
-    text,
-    history: [],
-  };
-  let saved = true;
-  try {
-    await saveRecord('complaint', rec);
-  } catch (err) {
-    saved = false; // still deliver it to the kitchen
-    console.error('Could not save complaint:', err);
+  // 1a) Save the complaint (kept 90 days, then deleted automatically).
+  //     The ID is random and the database refuses duplicates; on a clash, pick a new ID.
+  let rec;
+  let saved = false;
+  for (let attempt = 0; attempt < 3 && !saved; attempt++) {
+    const complaintId = makeId('CP'); // short ID like CP-4TH9ZA
+    const createdAt = Date.now();
+    rec = {
+      id: complaintId,
+      createdAt,
+      status: 'open',
+      customer: { name, phone },
+      orderId: orderId || null,
+      orderLinked,
+      message,
+      imageCount: images.length,
+      text: buildText(complaintId, createdAt),
+      history: [],
+    };
+    try {
+      await saveRecord('complaint', rec);
+      saved = true;
+    } catch (err) {
+      if (err.code === 'DUPLICATE') {
+        console.error('Complaint ID clash, trying a new one:', complaintId);
+        continue;
+      }
+      console.error('Could not save complaint:', err); // still deliver it to the kitchen
+      break;
+    }
   }
 
   // 1b) The complaint text, as its own message (with status buttons if saved)
   let messageId;
   try {
+    // When saved, the message also shows the order this complaint is about (matched by the order ID)
+    const full = saved ? await renderFull('complaint', rec) : null;
     const r = await fetch(api('sendMessage'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
-        text: saved ? renderMessage('complaint', rec) : `${text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
+        text: saved ? full.text : `${rec.text}\n\n⚠️ <i>Not saved to the database - no status buttons for this one.</i>`,
         parse_mode: 'HTML',
-        ...(saved ? { reply_markup: keyboard('complaint', rec) } : {}),
+        ...(saved ? { reply_markup: full.reply_markup } : {}),
       }),
     });
     if (!r.ok) {

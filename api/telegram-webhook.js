@@ -1,10 +1,10 @@
-// Vercel serverless function: POST /api/telegram-webhook
+﻿// Vercel serverless function: POST /api/telegram-webhook
 // Telegram calls this when the owner taps a status button or sends a command to the bot.
 // Env vars: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_WEBHOOK_SECRET
 // Optional: TELEGRAM_ALLOWED_USER_IDS  (comma-separated Telegram user IDs; use this if the chat is a group)
 
 const { KINDS, KIND_BY_CODE, setStatus, getRecord, listRecords, TTL_DAYS } = require('../lib/store');
-const { esc, tg, keyboard, renderMessage, summaryLine } = require('../lib/telegram');
+const { esc, tg, summaryLine, renderFull } = require('../lib/telegram');
 
 const isAllowed = (chatId, userId) => {
   if (String(chatId) !== String(process.env.TELEGRAM_CHAT_ID)) return false;
@@ -21,6 +21,23 @@ async function onCallback(cq) {
   }
 
   const [code, id, status] = String(cq.data || '').split('|');
+
+  // "Open order" / "Open complaint" shortcut buttons: send that record as a new message
+  if (code === 'v') {
+    const viewKind = String(id).startsWith('CP-') ? 'complaint' : String(id).startsWith('SK-') ? 'order' : null;
+    const target = viewKind ? await getRecord(viewKind, id) : null;
+    if (!target) {
+      return tg('answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: `${id} is no longer stored (records are kept ${TTL_DAYS} days).`,
+        show_alert: true,
+      });
+    }
+    const view = await renderFull(viewKind, target);
+    await tg('sendMessage', { chat_id: chatId, text: view.text, parse_mode: 'HTML', reply_markup: view.reply_markup });
+    return tg('answerCallbackQuery', { callback_query_id: cq.id });
+  }
+
   const kind = KIND_BY_CODE[code];
   if (!kind || !KINDS[kind].statuses[status] || !id) {
     return tg('answerCallbackQuery', { callback_query_id: cq.id, text: 'Unknown action.' });
@@ -35,12 +52,13 @@ async function onCallback(cq) {
     });
   }
 
+  const full = await renderFull(kind, rec); // keeps the linked order / complaints on the message
   await tg('editMessageText', {
     chat_id: chatId,
     message_id: cq.message.message_id,
-    text: renderMessage(kind, rec),
+    text: full.text,
     parse_mode: 'HTML',
-    reply_markup: keyboard(kind, rec),
+    reply_markup: full.reply_markup,
   }); // "message is not modified" (same button tapped twice) is harmless
   return tg('answerCallbackQuery', { callback_query_id: cq.id, text: `Marked: ${KINDS[kind].statuses[status]}` });
 }
@@ -50,9 +68,9 @@ const HELP = [
   '',
   '/pending – orders still to be done',
   '/orders – latest 10 orders',
-  '/order SK-XXXXXX – open one order',
+  '/order SK-XXXXXX – open one order (with any complaints about it)',
   '/complaints – open complaints',
-  '/complaint CP-XXXXXX – open one complaint',
+  '/complaint CP-XXXXXX – open one complaint (with the order it is about)',
   '',
   `Orders and complaints are kept for ${TTL_DAYS} days, then deleted automatically.`,
 ].join('\n');
@@ -76,7 +94,8 @@ async function onMessage(msg) {
     if (!id) return reply(`Send it like this: ${example}`);
     const rec = await getRecord(kind, id);
     if (!rec) return reply(`Couldn't find <code>${esc(id)}</code>. It may be older than ${TTL_DAYS} days.`);
-    return reply(renderMessage(kind, rec), { reply_markup: keyboard(kind, rec) });
+    const full = await renderFull(kind, rec);
+    return reply(full.text, { reply_markup: full.reply_markup });
   };
 
   switch (cmd) {
